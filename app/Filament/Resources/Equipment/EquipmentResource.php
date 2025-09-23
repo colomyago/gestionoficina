@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Equipment;
 
+use App\Filament\Resources\Equipment\RelationManagers\UserRelationManager;
+
 use App\Filament\Resources\Equipment\Pages\CreateEquipment;
 use App\Filament\Resources\Equipment\Pages\EditEquipment;
 use App\Filament\Resources\Equipment\Pages\ListEquipment;
 use App\Filament\Resources\Equipment\Pages\ViewEquipment;
-use App\Filament\Resources\Equipment\Schemas\EquipmentForm;
+use  
+App\Filament\Resources\Equipment\Schemas\EquipmentForm;
 use App\Filament\Resources\Equipment\Schemas\EquipmentInfolist;
 use App\Filament\Resources\Equipment\Tables\EquipmentTable;
 use App\Models\Equipment;
@@ -40,7 +43,7 @@ class EquipmentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            
         ];
     }
 

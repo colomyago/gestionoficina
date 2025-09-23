@@ -11,13 +11,16 @@ class EquipmentForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
+        return $schema  
             ->components([
                 TextInput::make('name')
+                    ->translateLabel()
                     ->required(),
                 Textarea::make('description')
+                    ->translateLabel()
                     ->columnSpanFull(),
                 TextInput::make('status')
+                    ->translateLabel()
                     ->required()
                     ->default('disponible'),
                 TextInput::make('user_id')
