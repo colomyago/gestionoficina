@@ -1,0 +1,179 @@
+1- Redacción de propuesta de proyectos con descripción y objetivos
+1.1 - Contexto / problema
+
+En muchas oficinas todavía se lleva el control del equipamiento con planillas de Excel, papeles o mensajes informales. Esto trae varios problemas:
+
+Se pierde tiempo buscando insumos.
+
+No se sabe con certeza cuánto stock hay.
+
+Se extravían equipos porque no hay trazabilidad.
+
+Se generan gastos extras por falta de organización.
+
+1.2 - Objetivos SMART
+
+Específico: Crear un sistema web para registrar y controlar los equipos de oficina.
+
+Medible: Que todos los préstamos, devoluciones y registros pasen por el sistema desde el primer uso.
+
+Alcanzable: Usar las herramientas que ya manejamos (Laravel, Docker, MySQL).
+
+Relevante: Mejorar la organización de los recursos de la oficina y reducir pérdidas.
+
+Temporal: Entregar un MVP que ya funcione y permita probar el sistema.
+
+1.3 - Alcance resumido
+
+Incluye:
+
+Alta y baja de equipos.
+
+Control de stock (entradas, salidas, préstamos).
+
+Usuarios con roles distintos (admin, supervisor, empleado).
+
+Reportes simples de inventario.
+
+Búsqueda básica con lenguaje natural.
+
+Excluye (por ahora):
+
+Integraciones con otros sistemas como contabilidad.
+
+Aplicación móvil nativa.
+
+Predicciones avanzadas con IA.
+
+1.4 - Entrega
+
+MVP: un sistema donde se pueda cargar equipos, prestarlos y devolverlos, con reportes básicos.
+
+Entrega intermedia: documentación y diagramas.
+
+Entrega final: el sistema corriendo en contenedores Docker listo para usar.
+
+1.5 - Interesados clave
+
+Administrador: usa el sistema todos los días para gestionar equipos.
+
+Supervisor: consulta reportes para tomar decisiones.
+
+Empleado: solicita y devuelve equipos.
+
+Profesor/Cliente: evalúa el resultado del proyecto.
+
+1.6 - Supuestos y restricciones
+
+Se asume que el sistema se va a usar desde computadoras de escritorio (web).
+
+Se usará un entorno de prueba de correos (Mailpit), pero no correos reales.
+
+Solo habrá tres roles definidos en esta primera versión.
+
+Restricción: no se usan servicios pagos ni integraciones externas en esta etapa.
+
+1.7 - Criterios de éxito
+
+Poder registrar todos los movimientos de equipos.
+
+Que cada equipo tenga historial de préstamos y devoluciones.
+
+Reportes que muestren rápidamente el estado del inventario.
+
+Que un nuevo usuario (empleado o admin) pueda usar el sistema sin capacitación compleja.
+
+1.8 - Rasgos iniciales
+
+Sistema simple, web y fácil de usar.
+
+Roles claros: cada uno solo ve lo que necesita.
+
+Funciones mínimas para arrancar, con posibilidad de crecer en el futuro.
+
+1.9 - Cronograma macro
+
+Inicio: Configuración del entorno y base de datos.
+
+Desarrollo: CRUD de equipos y roles.
+
+Integración: Módulo de préstamos y devoluciones.
+
+Cierre: Reportes, pruebas y documentación.
+
+2- Delimitar alcance (inclusiones / exclusiones) y supuestos / restricciones
+2.1 - ¿Qué debe sí o sí estar en el MVP? ¿Qué flujo mínimo del usuario resolvemos?
+
+Registro de usuarios y login con roles.
+
+Alta de equipos.
+
+Préstamo y devolución de equipos.
+
+Reporte básico del stock actual.
+
+Flujo mínimo: El admin carga un equipo → lo presta a un empleado → el empleado lo devuelve → el supervisor puede ver el reporte.
+
+2.2 - ¿Qué necesidades legítimas NO haremos ahora? ¿Por qué?
+
+App móvil: porque lleva más tiempo y queremos enfocarnos en web.
+
+Integraciones externas (contabilidad, ERP): porque no son críticas para el MVP.
+
+Predicciones de stock con IA: porque primero necesitamos datos reales.
+
+2.3 - ¿Hasta dónde llega cada función? Límites, volumen, roles, plataforma
+
+Equipos: se podrán cargar muchos, pero para pruebas trabajamos con decenas.
+
+Movimientos: préstamos y devoluciones simples, sin aprobaciones extra.
+
+Roles: admin (gestiona todo), supervisor (consulta reportes), empleado (solicita y devuelve).
+
+Plataforma: uso desde navegador en PC (responsive, pero no app nativa).
+
+2.4 - ¿De qué dependemos? ¿Quién lo provee y cuándo?
+
+Datos: se cargarán al inicio manualmente y luego por los clientes.
+
+Entorno: Docker y MySQL que configuramos nosotros.
+
+Usuarios reales: serán definidos por la empresa al momento de usarlo.
+
+3- Identificación de interesados y su impacto
+
+Administrador: Tiene un impacto alto porque es quien usa el sistema todos los días para dar de alta equipos, asignarlos, darlos de baja y generar reportes. Su participación es clave.
+
+Supervisor: Su impacto es medio. No gestiona equipos directamente, pero consulta reportes para tomar decisiones y controlar el inventario.
+
+Empleado: Tiene un impacto medio-bajo. Solo usa el sistema para ver qué equipos tiene asignados y para devolver o solicitar equipos.
+
+Profesor/Cliente: Tiene un impacto alto porque es quien evalúa si el proyecto cumple con los objetivos planteados y valida la calidad de la entrega.
+
+4- Definición de criterios de aceptación verificables para 2-3 funciones núcleo
+
+Función A: Gestión de Equipos
+
+Se pueden cargar nuevos equipos con datos básicos.
+
+No se puede borrar un equipo que esté prestado.
+
+Listado de equipos con filtros y paginación.
+
+Función B: Préstamo y Devolución
+
+No se puede prestar un equipo ya prestado.
+
+Al prestar, cambia el estado del equipo.
+
+Al devolver, vuelve a disponible y se registra el movimiento.
+
+Se puede ver el historial de préstamos por equipo y por usuario.
+
+Función C: Reportes y Búsqueda
+
+Ver inventario actualizado (disponibles y prestados).
+
+Reportes por usuario y por estado.
+
+Búsqueda con palabras simples (ejemplo: “equipos de Carlos”).
