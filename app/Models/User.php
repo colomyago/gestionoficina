@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -49,5 +50,45 @@ class User extends Authenticatable
     public function equipments()
     {
         return $this->hasMany(Equipment::class);
+    }
+
+    // Préstamos activos del usuario
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    // Préstamos activos
+    public function activeLoans()
+    {
+        return $this->hasMany(Loan::class)->where('status', 'activo');
+    }
+
+    // Solicitudes de mantenimiento creadas por el usuario
+    public function maintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'requested_by');
+    }
+
+    // Solicitudes de mantenimiento asignadas al usuario (si es de mantenimiento)
+    public function assignedMaintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'assigned_to');
+    }
+
+    // Métodos helper para verificar roles
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isTrabajador()
+    {
+        return $this->role === 'trabajador';
+    }
+
+    public function isMantenimiento()
+    {
+        return $this->role === 'mantenimiento';
     }
 }

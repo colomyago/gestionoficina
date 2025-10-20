@@ -18,12 +18,19 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class EquipmentResource extends Resource
 {
     protected static ?string $model = Equipment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $navigationLabel = 'Equipos';
+
+    protected static ?string $modelLabel = 'Equipo';
+
+    protected static ?string $pluralModelLabel = 'Equipos';
 
     public static function form(Schema $schema): Schema
     {

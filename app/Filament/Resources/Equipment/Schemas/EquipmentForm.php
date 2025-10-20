@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Equipment\Schemas;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
+use App\Models\User;
 
 class EquipmentForm
 {
@@ -14,19 +16,65 @@ class EquipmentForm
         return $schema  
             ->components([
                 TextInput::make('name')
-                    ->translateLabel()
-                    ->required(),
-                Textarea::make('description')
-                    ->translateLabel()
-                    ->columnSpanFull(),
-                TextInput::make('status')
-                    ->translateLabel()
+                    ->label('Nombre del Equipo')
                     ->required()
-                    ->default('disponible'),
-                TextInput::make('user_id')
-                    ->numeric(),
-                DatePicker::make('fecha_prestado'),
-                DatePicker::make('fecha_devolucion'),
+                    ->maxLength(255),
+                    
+                TextInput::make('codigo')
+                    ->label('Código')
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255)
+                    ->helperText('Código único del equipo (ej: LAP-001)'),
+                    
+                Select::make('categoria')
+                    ->label('Categoría')
+                    ->options([
+                        'Computadoras' => 'Computadoras',
+                        'Proyección' => 'Proyección',
+                        'Fotografía' => 'Fotografía',
+                        'Tablets' => 'Tablets',
+                        'Monitores' => 'Monitores',
+                        'Impresoras' => 'Impresoras',
+                        'Audio' => 'Audio',
+                        'Redes' => 'Redes',
+                        'Almacenamiento' => 'Almacenamiento',
+                        'Periféricos' => 'Periféricos',
+                        'Otros' => 'Otros',
+                    ])
+                    ->searchable()
+                    ->nullable(),
+                    
+                Textarea::make('description')
+                    ->label('Descripción')
+                    ->columnSpanFull()
+                    ->rows(3),
+                    
+                Select::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'disponible' => 'Disponible',
+                        'prestado' => 'Prestado',
+                        'mantenimiento' => 'En Mantenimiento',
+                        'baja' => 'Dado de Baja',
+                    ])
+                    ->default('disponible')
+                    ->required(),
+                    
+                Select::make('user_id')
+                    ->label('Asignado a')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->nullable()
+                    ->helperText('Usuario que actualmente tiene el equipo'),
+                    
+                DatePicker::make('fecha_prestado')
+                    ->label('Fecha de Préstamo')
+                    ->nullable(),
+                    
+                DatePicker::make('fecha_devolucion')
+                    ->label('Fecha de Devolución Estimada')
+                    ->nullable(),
             ]);
     }
 }
+
