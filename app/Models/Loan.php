@@ -27,25 +27,21 @@ class Loan extends Model
         'fecha_devolucion' => 'date',
     ];
 
-    // Relación con el equipo
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
     }
 
-    // Relación con el usuario que tiene el equipo
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relación con el admin que asignó el equipo
     public function assignedBy()
     {
         return $this->belongsTo(User::class, 'assigned_by');
     }
 
-    // Métodos helper
     public function isPending()
     {
         return $this->status === 'pendiente';
@@ -71,7 +67,6 @@ class Loan extends Model
         return $this->status === 'rechazado';
     }
 
-    // Scopes
     public function scopePending($query)
     {
         return $query->where('status', 'pendiente');

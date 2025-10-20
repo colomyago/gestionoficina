@@ -11,7 +11,6 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Solo admin puede ver todos los usuarios en el panel Filament
         return $user->isAdmin();
     }
 
@@ -20,9 +19,6 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        // Admin puede ver cualquier usuario
-        // Los usuarios pueden ver su propio perfil
-        // Trabajadores pueden ver otros usuarios
         return $user->isAdmin() || $user->id === $model->id || $user->isTrabajador();
     }
 
@@ -31,7 +27,6 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        // Solo admin puede crear usuarios
         return $user->isAdmin();
     }
 
@@ -40,8 +35,6 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        // Admin puede editar cualquier usuario
-        // Los usuarios pueden editar su propio perfil (datos básicos)
         return $user->isAdmin() || $user->id === $model->id;
     }
 
@@ -50,8 +43,6 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        // Solo admin puede eliminar usuarios
-        // No se puede eliminar a sí mismo
         return $user->isAdmin() && $user->id !== $model->id;
     }
 
@@ -76,7 +67,6 @@ class UserPolicy
      */
     public function changeRole(User $user): bool
     {
-        // Solo admin puede cambiar roles
         return $user->isAdmin();
     }
 }

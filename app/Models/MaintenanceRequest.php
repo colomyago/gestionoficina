@@ -26,19 +26,16 @@ class MaintenanceRequest extends Model
         'fecha_completado' => 'datetime',
     ];
 
-    // Relación con el equipo
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
     }
 
-    // Relación con el trabajador que solicitó
     public function requestedBy()
     {
         return $this->belongsTo(User::class, 'requested_by');
     }
 
-    // Relación con el personal de mantenimiento asignado
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');

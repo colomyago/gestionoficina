@@ -12,7 +12,6 @@ class LoanPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Todos pueden ver préstamos
         return true;
     }
 
@@ -21,8 +20,6 @@ class LoanPolicy
      */
     public function view(User $user, Loan $loan): bool
     {
-        // Admin puede ver todos
-        // Usuario puede ver sus propios préstamos
         return $user->isAdmin() || $loan->user_id === $user->id;
     }
 
@@ -31,8 +28,6 @@ class LoanPolicy
      */
     public function create(User $user): bool
     {
-        // Admin puede crear préstamos (asignar equipos)
-        // Trabajadores pueden solicitar préstamos
         return $user->isAdmin() || $user->isTrabajador();
     }
 
@@ -41,7 +36,6 @@ class LoanPolicy
      */
     public function update(User $user, Loan $loan): bool
     {
-        // Solo admin puede modificar préstamos
         return $user->isAdmin();
     }
 
@@ -50,7 +44,6 @@ class LoanPolicy
      */
     public function delete(User $user, Loan $loan): bool
     {
-        // Solo admin puede eliminar préstamos
         return $user->isAdmin();
     }
 
@@ -59,8 +52,6 @@ class LoanPolicy
      */
     public function return(User $user, Loan $loan): bool
     {
-        // Admin puede devolver cualquier equipo
-        // Usuario puede devolver sus propios equipos
         return $user->isAdmin() || $loan->user_id === $user->id;
     }
 }

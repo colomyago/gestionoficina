@@ -12,7 +12,6 @@ class EquipmentPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Todos los roles pueden ver la lista de equipos
         return true;
     }
 
@@ -21,7 +20,6 @@ class EquipmentPolicy
      */
     public function view(User $user, Equipment $equipment): bool
     {
-        // Todos pueden ver equipos individuales
         return true;
     }
 
@@ -30,7 +28,6 @@ class EquipmentPolicy
      */
     public function create(User $user): bool
     {
-        // Solo admin puede crear equipos
         return $user->isAdmin();
     }
 
@@ -39,7 +36,6 @@ class EquipmentPolicy
      */
     public function update(User $user, Equipment $equipment): bool
     {
-        // Solo admin puede editar equipos
         return $user->isAdmin();
     }
 
@@ -48,8 +44,6 @@ class EquipmentPolicy
      */
     public function delete(User $user, Equipment $equipment): bool
     {
-        // Solo admin puede eliminar equipos
-        // Y no se puede eliminar si está prestado
         return $user->isAdmin() && !$equipment->isLoaned();
     }
 
@@ -74,7 +68,6 @@ class EquipmentPolicy
      */
     public function assign(User $user): bool
     {
-        // Solo admin puede asignar equipos
         return $user->isAdmin();
     }
 
@@ -83,7 +76,6 @@ class EquipmentPolicy
      */
     public function sendToMaintenance(User $user): bool
     {
-        // Trabajadores y admin pueden enviar a mantenimiento
         return $user->isTrabajador() || $user->isAdmin();
     }
 
@@ -92,7 +84,6 @@ class EquipmentPolicy
      */
     public function manageMaintenance(User $user): bool
     {
-        // Solo personal de mantenimiento puede gestionar reparaciones
         return $user->isMantenimiento() || $user->isAdmin();
     }
 }
