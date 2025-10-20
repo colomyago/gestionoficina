@@ -26,18 +26,11 @@ class UserForm
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                     
-                Select::make('role')
+                Select::make('role_id')
                     ->label('Rol')
-                    ->options([
-                        'admin' => 'Administrador',
-                        'trabajador' => 'Trabajador',
-                        'mantenimiento' => 'Mantenimiento',
-                    ])
-                    ->default('trabajador')
-                    ->required()
-                    ->disabled(fn () => !Auth::user()?->isAdmin())
-                    ->helperText('Solo administradores pueden cambiar roles'),
-                    
+                    ->relationship('role', 'name')
+                    ->required(),
+
                 DateTimePicker::make('email_verified_at')
                     ->label('Email Verificado')
                     ->nullable(),

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
 class RoleSeeder extends Seeder
@@ -13,61 +14,94 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('🚀 Iniciando creación de roles y usuarios...');
+
+        // Crear roles si no existen
+        $adminRole = Role::firstOrCreate(
+            ['code' => 'admin'],
+            ['name' => 'Administrador']
+        );
+        $this->command->info("✅ Rol Admin creado/verificado (ID: {$adminRole->id})");
+
+        $trabajadorRole = Role::firstOrCreate(
+            ['code' => 'trabajador'],
+            ['name' => 'Trabajador']
+        );
+        $this->command->info("✅ Rol Trabajador creado/verificado (ID: {$trabajadorRole->id})");
+
+        $mantenimientoRole = Role::firstOrCreate(
+            ['code' => 'mantenimiento'],
+            ['name' => 'Mantenimiento']
+        );
+        $this->command->info("✅ Rol Mantenimiento creado/verificado (ID: {$mantenimientoRole->id})");
+
+        $this->command->newLine();
+        $this->command->info('👥 Creando usuarios...');
+
         // Crear usuario Admin
-        User::create([
-            'name' => 'Administrador Principal',
-            'email' => 'admin@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-            'email_verified_at' => now(),
-        ]);
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@gestionoficina.com'],
+            [
+                'name' => 'Administrador Principal',
+                'password' => Hash::make('password123'),
+                'role_id' => $adminRole->id,
+                'email_verified_at' => now(),
+            ]
+        );
+        $this->command->info("👑 Admin creado: {$admin->name} ({$admin->email}) - Role ID: {$admin->role_id}");
 
         // Crear usuarios Trabajadores
-        User::create([
-            'name' => 'Carlos Trabajador',
-            'email' => 'carlos@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'trabajador',
-            'email_verified_at' => now(),
-        ]);
+        $trabajadores = [
+            ['name' => 'Carlos Trabajador', 'email' => 'carlos@gestionoficina.com'],
+            ['name' => 'María Trabajadora', 'email' => 'maria@gestionoficina.com'],
+            ['name' => 'Juan Trabajador', 'email' => 'juan@gestionoficina.com'],
+        ];
 
-        User::create([
-            'name' => 'María Trabajadora',
-            'email' => 'maria@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'trabajador',
-            'email_verified_at' => now(),
-        ]);
-
-        User::create([
-            'name' => 'Juan Trabajador',
-            'email' => 'juan@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'trabajador',
-            'email_verified_at' => now(),
-        ]);
+        foreach ($trabajadores as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('password123'),
+                    'role_id' => $trabajadorRole->id,
+                    'email_verified_at' => now(),
+                ]
+            );
+            $this->command->info("👷 Trabajador creado: {$user->name} ({$user->email})");
+        }
 
         // Crear usuarios de Mantenimiento
-        User::create([
-            'name' => 'Pedro Mantenimiento',
-            'email' => 'pedro@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'mantenimiento',
-            'email_verified_at' => now(),
-        ]);
+        $mantenimiento = [
+            ['name' => 'Pedro Mantenimiento', 'email' => 'pedro@gestionoficina.com'],
+            ['name' => 'Ana Mantenimiento', 'email' => 'ana@gestionoficina.com'],
+        ];
 
-        User::create([
-            'name' => 'Ana Mantenimiento',
-            'email' => 'ana@gestionoficina.com',
-            'password' => Hash::make('password123'),
-            'role' => 'mantenimiento',
-            'email_verified_at' => now(),
-        ]);
+        foreach ($mantenimiento as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('password123'),
+                    'role_id' => $mantenimientoRole->id,
+                    'email_verified_at' => now(),
+                ]
+            );
+            $this->command->info("🔧 Mantenimiento creado: {$user->name} ({$user->email})");
+        }
 
-        $this->command->info('✅ Usuarios con roles creados exitosamente');
-        $this->command->info('📧 Admin: admin@gestionoficina.com');
-        $this->command->info('📧 Trabajadores: carlos@, maria@, juan@gestionoficina.com');
-        $this->command->info('📧 Mantenimiento: pedro@, ana@gestionoficina.com');
-        $this->command->info('🔑 Contraseña para todos: password123');
+        $this->command->newLine();
+        $this->command->info('✅ ¡Proceso completado exitosamente!');
+        $this->command->newLine();
+        $this->command->table(
+            ['Rol', 'Email', 'Contraseña'],
+            [
+                ['Admin', 'admin@gestionoficina.com', 'password123'],
+                ['Trabajador', 'carlos@gestionoficina.com', 'password123'],
+                ['Trabajador', 'maria@gestionoficina.com', 'password123'],
+                ['Trabajador', 'juan@gestionoficina.com', 'password123'],
+                ['Mantenimiento', 'pedro@gestionoficina.com', 'password123'],
+                ['Mantenimiento', 'ana@gestionoficina.com', 'password123'],
+            ]
+        );
     }
 }
