@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('equipment_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Usuario que tiene el equipo
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Usuario que solicita/tiene el equipo
             $table->foreignId('assigned_by')->nullable()->constrained('users')->onDelete('set null'); // Admin que asignó
-            $table->enum('status', ['activo', 'devuelto'])->default('activo');
-            $table->date('fecha_prestamo');
+            $table->enum('status', ['pendiente', 'aprobado', 'rechazado', 'activo', 'devuelto'])->default('pendiente');
+            $table->date('fecha_solicitud')->nullable();
+            $table->date('fecha_prestamo')->nullable();
             $table->date('fecha_devolucion')->nullable();
-            $table->text('notas')->nullable();
+            $table->text('motivo')->nullable(); // Por qué necesita el equipo
+            $table->text('notas')->nullable(); // Notas del admin
             $table->timestamps();
         });
     }

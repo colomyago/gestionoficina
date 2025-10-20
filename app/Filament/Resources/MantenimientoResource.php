@@ -1,0 +1,306 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\MantenimientoResource\Pages;
+use App\Models\MaintenanceRequest;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Placeholder;
+use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
+use BackedEnum;
+use Filament\Support\Icons\Heroicon;
+
+class MantenimientoResource extends Resource
+{
+    protected static ?string $model = MaintenanceRequest::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
+
+    protected static ?string $navigationLabel = 'Mantenimiento';
+
+    protected static ?string $modelLabel = 'Solicitud de Mantenimiento';
+
+    protected static ?string $pluralModelLabel = 'Mantenimiento';
+
+    protected static ?int $navigationSort = 3;
+
+    // Solo visible para personal de mantenimiento y admin
+    public static function canViewAny(): bool
+    {
+        $user = Auth::user();
+        return $user && in_array($user->role, ['mantenimiento', 'admin']);
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Placeholder::make('equipment.name')
+                    ->label('Equipo')
+                    ->content(fn ($record) => $record->equipment->name ?? 'N/A'),
+
+                Placeholder::make('equipment.codigo')
+                    ->label('Código')
+                    ->content(fn ($record) => $record->equipment->codigo ?? 'N/A'),
+
+                Placeholder::make('requestedBy.name')
+                    ->label('Solicitado por')
+                    ->content(fn ($record) => $record->requestedBy->name ?? 'N/A'),
+
+                Placeholder::make('descripcion_problema')
+                    ->label('Descripción del Problema')
+                    ->content(fn ($record) => $record->descripcion_problema ?? 'N/A'),
+
+                Placeholder::make('fecha_solicitud')
+                    ->label('Fecha de Solicitud')
+                    ->content(fn ($record) => $record->fecha_solicitud?->format('d/m/Y H:i') ?? 'N/A'),
+
+                Select::make('assigned_to')
+                    ->label('Asignado a')
+                    ->options(function () {
+                        return \App\Models\User::where('role', 'mantenimiento')
+                            ->pluck('name', 'id');
+                    })
+                    ->searchable()
+                    ->nullable()
+                    ->helperText('Técnico responsable'),
+
+                Select::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'en_proceso' => 'En Proceso',
+                        'completado' => 'Completado',
+                        'rechazado' => 'Rechazado',
+                    ])
+                    ->required(),
+
+                Textarea::make('solucion')
+                    ->label('Solución Aplicada')
+                    ->rows(3)
+                    ->maxLength(1000)
+                    ->helperText('Describe la solución aplicada'),
+
+                Select::make('resultado')
+                    ->label('Resultado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'reparado' => 'Reparado',
+                        'dado_de_baja' => 'Dado de Baja',
+                    ])
+                    ->required()
+                    ->default('pendiente'),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('equipment.name')
+                    ->label('Equipo')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('equipment.codigo')
+                    ->label('Código')
+                    ->searchable(),
+
+                TextColumn::make('requestedBy.name')
+                    ->label('Solicitado por')
+                    ->searchable(),
+
+                BadgeColumn::make('status')
+                    ->label('Estado')
+                    ->colors([
+                        'warning' => 'pendiente',
+                        'info' => 'en_proceso',
+                        'success' => 'completado',
+                        'danger' => 'rechazado',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pendiente' => 'Pendiente',
+                        'en_proceso' => 'En Proceso',
+                        'completado' => 'Completado',
+                        'rechazado' => 'Rechazado',
+                        default => $state,
+                    }),
+
+                BadgeColumn::make('resultado')
+                    ->label('Resultado')
+                    ->colors([
+                        'secondary' => 'pendiente',
+                        'success' => 'reparado',
+                        'danger' => 'dado_de_baja',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pendiente' => 'Pendiente',
+                        'reparado' => 'Reparado',
+                        'dado_de_baja' => 'Dado de Baja',
+                        default => $state,
+                    }),
+
+                TextColumn::make('assignedTo.name')
+                    ->label('Asignado a')
+                    ->placeholder('Sin asignar'),
+
+                TextColumn::make('fecha_solicitud')
+                    ->label('Fecha')
+                    ->dateTime('d/m/Y')
+                    ->sortable(),
+
+                TextColumn::make('descripcion_problema')
+                    ->label('Problema')
+                    ->limit(30)
+                    ->wrap(),
+            ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'en_proceso' => 'En Proceso',
+                        'completado' => 'Completado',
+                        'rechazado' => 'Rechazado',
+                    ]),
+
+                SelectFilter::make('resultado')
+                    ->label('Resultado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'reparado' => 'Reparado',
+                        'dado_de_baja' => 'Dado de Baja',
+                    ]),
+            ])
+            ->recordActions([
+                ViewAction::make(),
+                
+                Action::make('tomar')
+                    ->label('Tomar')
+                    ->icon('heroicon-o-hand-raised')
+                    ->color('info')
+                    ->visible(fn (MaintenanceRequest $record): bool => 
+                        $record->status === 'pendiente' && Auth::user()->role === 'mantenimiento'
+                    )
+                    ->requiresConfirmation()
+                    ->action(function (MaintenanceRequest $record) {
+                        $record->update([
+                            'status' => 'en_proceso',
+                            'assigned_to' => Auth::id(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Solicitud tomada')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('reparar')
+                    ->label('Marcar como Reparado')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn (MaintenanceRequest $record): bool => 
+                        in_array($record->status, ['pendiente', 'en_proceso']) && 
+                        in_array(Auth::user()->role, ['mantenimiento', 'admin'])
+                    )
+                    ->requiresConfirmation()
+                    ->form([
+                        Textarea::make('solucion')
+                            ->label('Solución Aplicada')
+                            ->required()
+                            ->rows(3),
+                    ])
+                    ->action(function (MaintenanceRequest $record, array $data) {
+                        $record->update([
+                            'status' => 'completado',
+                            'resultado' => 'reparado',
+                            'solucion' => $data['solucion'],
+                            'fecha_completado' => now(),
+                        ]);
+
+                        // Cambiar el equipo a disponible
+                        $record->equipment->update([
+                            'status' => 'disponible',
+                        ]);
+
+                        Notification::make()
+                            ->title('Equipo reparado y disponible')
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('dar_de_baja')
+                    ->label('Dar de Baja')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn (MaintenanceRequest $record): bool => 
+                        in_array($record->status, ['pendiente', 'en_proceso']) && 
+                        in_array(Auth::user()->role, ['mantenimiento', 'admin'])
+                    )
+                    ->requiresConfirmation()
+                    ->form([
+                        Textarea::make('solucion')
+                            ->label('Motivo de la baja')
+                            ->required()
+                            ->rows(3)
+                            ->helperText('Explica por qué se da de baja el equipo'),
+                    ])
+                    ->action(function (MaintenanceRequest $record, array $data) {
+                        $record->update([
+                            'status' => 'completado',
+                            'resultado' => 'dado_de_baja',
+                            'solucion' => $data['solucion'],
+                            'fecha_completado' => now(),
+                        ]);
+
+                        // Marcar el equipo como dado de baja
+                        $record->equipment->update([
+                            'status' => 'baja',
+                        ]);
+
+                        Notification::make()
+                            ->title('Equipo dado de baja')
+                            ->warning()
+                            ->send();
+                    }),
+
+                EditAction::make()
+                    ->visible(fn (): bool => Auth::user()->role === 'admin'),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    //
+                ]),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListMantenimientos::route('/'),
+            'view' => Pages\ViewMantenimiento::route('/{record}'),
+            'edit' => Pages\EditMantenimiento::route('/{record}/edit'),
+        ];
+    }
+}
