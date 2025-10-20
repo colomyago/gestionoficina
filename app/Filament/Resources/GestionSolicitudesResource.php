@@ -42,7 +42,7 @@ class GestionSolicitudesResource extends Resource
     public static function canViewAny(): bool
     {
         $user = Auth::user();
-        return $user && $user->role === 'admin';
+        return $user && $user->isAdmin();
     }
 
     public static function form(Schema $schema): Schema

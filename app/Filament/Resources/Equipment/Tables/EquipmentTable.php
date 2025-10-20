@@ -81,9 +81,9 @@ class EquipmentTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make()
-                        ->visible(fn (): bool => Auth::user()->role === 'admin'),
+                        ->visible(fn (): bool => Auth::user()->isAdmin()),
                     DeleteAction::make()
-                        ->visible(fn (): bool => Auth::user()->role === 'admin'),
+                        ->visible(fn (): bool => Auth::user()->isAdmin()),
                     
                     // ACCIÓN: Solicitar Préstamo (solo trabajadores, equipos disponibles)
                     Action::make('solicitar')
@@ -91,7 +91,7 @@ class EquipmentTable
                         ->icon('heroicon-o-hand-raised')
                         ->color('primary')
                         ->visible(fn ($record): bool => 
-                            Auth::user()->role === 'trabajador' && 
+                            Auth::user()->isTrabajador() && 
                             $record->status === 'disponible'
                         )
                         ->form([
@@ -128,7 +128,7 @@ class EquipmentTable
                         ->icon('heroicon-o-wrench-screwdriver')
                         ->color('warning')
                         ->visible(fn ($record): bool => 
-                            in_array(Auth::user()->role, ['trabajador', 'admin']) && 
+                            (Auth::user()->isTrabajador() || Auth::user()->isAdmin()) && 
                             in_array($record->status, ['disponible', 'prestado'])
                         )
                         ->form([
@@ -163,7 +163,7 @@ class EquipmentTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => Auth::user()->role === 'admin'),
+                        ->visible(fn (): bool => Auth::user()->isAdmin()),
                 ]),
             ]);
     }

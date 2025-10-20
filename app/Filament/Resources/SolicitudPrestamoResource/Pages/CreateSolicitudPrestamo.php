@@ -13,7 +13,7 @@ class CreateSolicitudPrestamo extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Si no viene user_id (trabajador), usar el usuario actual
-        if (!isset($data['user_id']) || Auth::user()->role !== 'admin') {
+        if (!isset($data['user_id']) || !Auth::user()->isAdmin()) {
             $data['user_id'] = Auth::id();
         }
         

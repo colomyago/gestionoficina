@@ -41,7 +41,7 @@ class MantenimientoResource extends Resource
     public static function canViewAny(): bool
     {
         $user = Auth::user();
-        return $user && in_array($user->role, ['mantenimiento', 'admin']);
+        return $user && ($user->isMantenimiento() || $user->isAdmin());
     }
 
     public static function form(Schema $schema): Schema
@@ -193,7 +193,7 @@ class MantenimientoResource extends Resource
                     ->icon('heroicon-o-hand-raised')
                     ->color('info')
                     ->visible(fn (MaintenanceRequest $record): bool => 
-                        $record->status === 'pendiente' && Auth::user()->role === 'mantenimiento'
+                        $record->status === 'pendiente' && Auth::user()->isMantenimiento()
                     )
                     ->requiresConfirmation()
                     ->action(function (MaintenanceRequest $record) {
@@ -214,7 +214,7 @@ class MantenimientoResource extends Resource
                     ->color('success')
                     ->visible(fn (MaintenanceRequest $record): bool => 
                         in_array($record->status, ['pendiente', 'en_proceso']) && 
-                        in_array(Auth::user()->role, ['mantenimiento', 'admin'])
+                        (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -248,7 +248,7 @@ class MantenimientoResource extends Resource
                     ->color('danger')
                     ->visible(fn (MaintenanceRequest $record): bool => 
                         in_array($record->status, ['pendiente', 'en_proceso']) && 
-                        in_array(Auth::user()->role, ['mantenimiento', 'admin'])
+                        (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
                     )
                     ->requiresConfirmation()
                     ->form([
@@ -278,7 +278,7 @@ class MantenimientoResource extends Resource
                     }),
 
                 EditAction::make()
-                    ->visible(fn (): bool => Auth::user()->role === 'admin'),
+                    ->visible(fn (): bool => Auth::user()->isAdmin()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

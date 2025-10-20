@@ -43,7 +43,7 @@ class SolicitudPrestamoResource extends Resource
     public static function canViewAny(): bool
     {
         $user = Auth::user();
-        return $user && in_array($user->role, ['trabajador', 'admin']);
+        return $user && ($user->isTrabajador() || $user->isAdmin());
     }
 
     public static function form(Schema $schema): Schema
@@ -55,7 +55,7 @@ class SolicitudPrestamoResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->required()
-                    ->visible(fn () => Auth::user()->role === 'admin')
+                    ->visible(fn () => Auth::user()->isAdmin())
                     ->helperText('Selecciona el usuario que solicita el equipo'),
 
                 Select::make('equipment_id')
@@ -91,7 +91,7 @@ class SolicitudPrestamoResource extends Resource
         return $table
             ->modifyQueryUsing(function (Builder $query) {
                 // Admin ve todas las solicitudes, trabajadores solo las suyas
-                if (Auth::user()->role !== 'admin') {
+                if (!Auth::user()->isAdmin()) {
                     return $query->where('user_id', Auth::id());
                 }
                 return $query;
@@ -101,7 +101,7 @@ class SolicitudPrestamoResource extends Resource
                     ->label('Solicitante')
                     ->searchable()
                     ->sortable()
-                    ->visible(fn () => Auth::user()->role === 'admin'),
+                    ->visible(fn () => Auth::user()->isAdmin()),
 
                 TextColumn::make('equipment.name')
                     ->label('Equipo')
