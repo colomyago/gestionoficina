@@ -11,9 +11,8 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admin puede ver todos los usuarios
-        // Trabajadores pueden ver otros trabajadores
-        return $user->isAdmin() || $user->isTrabajador();
+        // Solo admin puede ver todos los usuarios en el panel Filament
+        return $user->isAdmin();
     }
 
     /**

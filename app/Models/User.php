@@ -20,7 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
+        'role_id', // Agregado para asignación masiva
     ];
 
     /**
@@ -46,13 +46,13 @@ class User extends Authenticatable
         ];
     }
 
-    // Corregir el nombre del método a equipments() en plural
+    // Relación con equipos
     public function equipments()
     {
         return $this->hasMany(Equipment::class);
     }
 
-    // Préstamos activos del usuario
+    // Préstamos del usuario
     public function loans()
     {
         return $this->hasMany(Loan::class);
@@ -70,25 +70,53 @@ class User extends Authenticatable
         return $this->hasMany(MaintenanceRequest::class, 'requested_by');
     }
 
-    // Solicitudes de mantenimiento asignadas al usuario (si es de mantenimiento)
+    // Solicitudes de mantenimiento asignadas al usuario
     public function assignedMaintenanceRequests()
     {
         return $this->hasMany(MaintenanceRequest::class, 'assigned_to');
     }
 
-    // Métodos helper para verificar roles
-    public function isAdmin()
+    // Relación con Role
+    public function role()
     {
-        return $this->role === 'admin';
+        return $this->belongsTo(Role::class);
     }
 
-    public function isTrabajador()
+    // Método genérico para verificar roles
+    public function hasRole(string $code): bool
     {
-        return $this->role === 'trabajador';
+        if (!$this->relationLoaded('role')) {
+            $this->load('role');
+        }
+        // Verifica que la relación esté cargada y que el código coincida
+        return $this->role && $this->role->code === $code;
     }
 
-    public function isMantenimiento()
+    // Métodos helper para verificar roles específicos
+    public function isAdmin(): bool
     {
-        return $this->role === 'mantenimiento';
+        return $this->hasRole('admin');
+    }
+
+    public function isTrabajador(): bool
+    {
+        return $this->hasRole('trabajador');
+    }
+
+    public function isMantenimiento(): bool
+    {
+        return $this->hasRole('mantenimiento');
+    }
+
+    // Método adicional para verificar múltiples roles
+    public function hasAnyRole(array $codes): bool
+    {
+        return is_object($this->role) && in_array($this->role?->code, $codes);
+    }
+
+    // Obtener el nombre del rol
+    public function getRoleName(): ?string
+    {
+        return is_object($this->role) ? $this->role?->name : null;
     }
 }
