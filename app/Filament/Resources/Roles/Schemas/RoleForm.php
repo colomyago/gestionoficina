@@ -12,8 +12,12 @@ class RoleForm
         return $schema
             ->components([
                 TextInput::make('code')
+                    ->label('Código')
+                    ->translateLabel()
                     ->required(),
                 TextInput::make('name')
+                    ->label('Descripción')
+                    ->translateLabel()
                     ->required(),
             ]);
     }
