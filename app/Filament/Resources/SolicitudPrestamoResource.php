@@ -144,6 +144,12 @@ class SolicitudPrestamoResource extends Resource
                     ->label('Devolución Estimada')
                     ->date('d/m/Y'),
 
+                TextColumn::make('fecha_devolucion_real')
+                    ->label('Devolución Real')
+                    ->date('d/m/Y')
+                    ->placeholder('Pendiente')
+                    ->tooltip('Fecha en que se devolvió realmente el equipo'),
+
                 TextColumn::make('motivo')
                     ->label('Motivo')
                     ->limit(50)
@@ -169,7 +175,11 @@ class SolicitudPrestamoResource extends Resource
                     ->visible(fn (Loan $record): bool => $record->status === 'activo')
                     ->requiresConfirmation()
                     ->action(function (Loan $record) {
-                        $record->update(['status' => 'devuelto']);
+                        $record->update([
+                            'status' => 'devuelto',
+                            'fecha_devolucion_real' => now(),
+                        ]);
+                        
                         $record->equipment->update([
                             'status' => 'disponible',
                             'user_id' => null,
@@ -180,6 +190,7 @@ class SolicitudPrestamoResource extends Resource
                         Notification::make()
                             ->title('Equipo devuelto exitosamente')
                             ->success()
+                            ->body('El equipo ha sido marcado como disponible.')
                             ->send();
                     }),
                 

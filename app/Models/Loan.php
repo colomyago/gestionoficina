@@ -17,6 +17,7 @@ class Loan extends Model
         'fecha_solicitud',
         'fecha_prestamo',
         'fecha_devolucion',
+        'fecha_devolucion_real',
         'motivo',
         'notas'
     ];
@@ -25,6 +26,7 @@ class Loan extends Model
         'fecha_solicitud' => 'date',
         'fecha_prestamo' => 'date',
         'fecha_devolucion' => 'date',
+        'fecha_devolucion_real' => 'date',
     ];
 
     public function equipment()

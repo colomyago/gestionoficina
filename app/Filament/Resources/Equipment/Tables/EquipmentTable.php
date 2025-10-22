@@ -106,6 +106,21 @@ class EquipmentTable
                                 ->minDate(now()->addDay()),
                         ])
                         ->action(function ($record, array $data) {
+                            // Validar que no exista una solicitud pendiente o activa
+                            $existingSolicitud = Loan::where('equipment_id', $record->id)
+                                ->where('user_id', Auth::id())
+                                ->whereIn('status', ['pendiente', 'activo'])
+                                ->first();
+
+                            if ($existingSolicitud) {
+                                Notification::make()
+                                    ->title('Solicitud duplicada')
+                                    ->danger()
+                                    ->body('Ya tienes una solicitud ' . $existingSolicitud->status . ' para este equipo.')
+                                    ->send();
+                                return;
+                            }
+
                             Loan::create([
                                 'equipment_id' => $record->id,
                                 'user_id' => Auth::id(),
@@ -140,6 +155,23 @@ class EquipmentTable
                                 ->helperText('Describe el problema del equipo'),
                         ])
                         ->action(function ($record, array $data) {
+                            // Si el equipo está prestado, actualizar el loan activo
+                            if ($record->status === 'prestado') {
+                                $activeLoan = Loan::where('equipment_id', $record->id)
+                                    ->where('status', 'activo')
+                                    ->first();
+
+                                if ($activeLoan) {
+                                    $activeLoan->update([
+                                        'status' => 'devuelto',
+                                        'fecha_devolucion_real' => now(),
+                                        'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') . 
+                                                   'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
+                                                   $data['descripcion_problema']
+                                    ]);
+                                }
+                            }
+
                             MaintenanceRequest::create([
                                 'equipment_id' => $record->id,
                                 'requested_by' => Auth::id(),
@@ -151,11 +183,15 @@ class EquipmentTable
                             $record->update([
                                 'status' => 'mantenimiento',
                                 'user_id' => null,
+                                'fecha_prestado' => null,
+                                'fecha_devolucion' => null,
                             ]);
 
                             Notification::make()
                                 ->title('Equipo enviado a mantenimiento')
                                 ->success()
+                                ->body('El equipo ha sido enviado a mantenimiento.' . 
+                                      ($record->status === 'prestado' ? ' El préstamo activo fue finalizado automáticamente.' : ''))
                                 ->send();
                         }),
                 ])

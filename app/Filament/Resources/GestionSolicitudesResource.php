@@ -137,6 +137,17 @@ class GestionSolicitudesResource extends Resource
                     ->date('d/m/Y')
                     ->placeholder('N/A'),
 
+                TextColumn::make('fecha_devolucion')
+                    ->label('F. Dev. Estimada')
+                    ->date('d/m/Y')
+                    ->placeholder('N/A'),
+
+                TextColumn::make('fecha_devolucion_real')
+                    ->label('F. Dev. Real')
+                    ->date('d/m/Y')
+                    ->placeholder('-')
+                    ->color(fn ($record) => $record->fecha_devolucion_real ? 'success' : 'gray'),
+
                 TextColumn::make('motivo')
                     ->label('Motivo')
                     ->limit(30)
@@ -163,19 +174,61 @@ class GestionSolicitudesResource extends Resource
                     ->color('success')
                     ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
                     ->requiresConfirmation()
+                    ->fillForm(fn (Loan $record): array => [
+                        'fecha_prestamo' => now(),
+                        'fecha_devolucion' => $record->fecha_devolucion,
+                        'motivo_original' => $record->motivo,
+                    ])
                     ->form([
+                        Placeholder::make('motivo_original')
+                            ->label('Motivo de la Solicitud')
+                            ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                            ->columnSpanFull(),
+                        
                         DatePicker::make('fecha_prestamo')
                             ->label('Fecha de Préstamo')
-                            ->default(now())
-                            ->required(),
+                            ->minDate(now())
+                            ->required()
+                            ->helperText('Fecha en que se entrega el equipo'),
                         DatePicker::make('fecha_devolucion')
                             ->label('Fecha de Devolución Estimada')
-                            ->required(),
+                            ->minDate(now()->addDay())
+                            ->required()
+                            ->helperText('Fecha solicitada por el trabajador. Puedes modificarla si es necesario.'),
                         Textarea::make('notas')
-                            ->label('Notas')
-                            ->rows(2),
+                            ->label('Notas del Admin')
+                            ->rows(2)
+                            ->placeholder('Condiciones especiales, observaciones, etc.')
+                            ->columnSpanFull(),
                     ])
                     ->action(function (Loan $record, array $data) {
+                        // Validar que el equipo esté disponible
+                        $record->load('equipment');
+                        
+                        if ($record->equipment->status !== 'disponible') {
+                            Notification::make()
+                                ->title('Equipo no disponible')
+                                ->danger()
+                                ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
+                                ->send();
+                            return;
+                        }
+
+                        // Verificar que no haya otro préstamo activo para este equipo
+                        $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
+                            ->where('id', '!=', $record->id)
+                            ->where('status', 'activo')
+                            ->first();
+
+                        if ($otherActiveLoan) {
+                            Notification::make()
+                                ->title('Equipo ya prestado')
+                                ->danger()
+                                ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
+                                ->send();
+                            return;
+                        }
+
                         $record->update([
                             'status' => 'activo',
                             'fecha_prestamo' => $data['fecha_prestamo'],
@@ -195,6 +248,7 @@ class GestionSolicitudesResource extends Resource
                         Notification::make()
                             ->title('Solicitud aprobada')
                             ->success()
+                            ->body('El equipo ha sido asignado a ' . $record->user->name)
                             ->send();
                     }),
 
@@ -204,11 +258,21 @@ class GestionSolicitudesResource extends Resource
                     ->color('danger')
                     ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
                     ->requiresConfirmation()
+                    ->modalDescription(fn (Loan $record): string => 
+                        'Vas a rechazar la solicitud de ' . $record->user->name . 
+                        ' para el equipo ' . $record->equipment->name)
                     ->form([
+                        Placeholder::make('motivo_original')
+                            ->label('Motivo de la Solicitud')
+                            ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                            ->columnSpanFull(),
+                        
                         Textarea::make('notas')
-                            ->label('Motivo del rechazo')
+                            ->label('Motivo del Rechazo')
                             ->required()
-                            ->rows(3),
+                            ->rows(3)
+                            ->placeholder('Explica por qué se rechaza esta solicitud')
+                            ->columnSpanFull(),
                     ])
                     ->action(function (Loan $record, array $data) {
                         $record->update([
@@ -219,6 +283,7 @@ class GestionSolicitudesResource extends Resource
                         Notification::make()
                             ->title('Solicitud rechazada')
                             ->danger()
+                            ->body('Se ha notificado al usuario sobre el rechazo.')
                             ->send();
                     }),
 
