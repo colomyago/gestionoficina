@@ -16,10 +16,10 @@ return new class extends Migration
             $table->foreignId('equipment_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Usuario que solicita/tiene el equipo
             $table->foreignId('assigned_by')->nullable()->constrained('users')->onDelete('set null'); // Admin que asignó
-            $table->enum('status', ['pendiente', 'aprobado', 'rechazado', 'activo', 'devuelto'])->default('pendiente');
+            $table->enum('status', ['pendiente', 'rechazado', 'activo', 'devuelto'])->default('pendiente');
             $table->date('fecha_solicitud')->nullable();
-            $table->date('fecha_prestamo')->nullable();
-            $table->date('fecha_devolucion')->nullable();
+            $table->dateTime('fecha_prestamo')->nullable()->comment('Fecha y hora exacta en que se aprobó y entregó el equipo');
+            $table->date('fecha_devolucion')->nullable()->comment('Fecha estimada de devolución (establecida por admin)');
             $table->text('motivo')->nullable(); // Por qué necesita el equipo
             $table->text('notas')->nullable(); // Notas del admin
             $table->timestamps();

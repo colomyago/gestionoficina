@@ -24,7 +24,7 @@ class Loan extends Model
 
     protected $casts = [
         'fecha_solicitud' => 'date',
-        'fecha_prestamo' => 'date',
+        'fecha_prestamo' => 'datetime',
         'fecha_devolucion' => 'date',
         'fecha_devolucion_real' => 'date',
     ];
@@ -47,11 +47,6 @@ class Loan extends Model
     public function isPending()
     {
         return $this->status === 'pendiente';
-    }
-
-    public function isApproved()
-    {
-        return $this->status === 'aprobado';
     }
 
     public function isActive()

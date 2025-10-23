@@ -65,23 +65,25 @@ class GestionSolicitudesResource extends Resource
                     ->label('Fecha de Solicitud')
                     ->content(fn ($record) => $record->fecha_solicitud?->format('d/m/Y') ?? 'N/A'),
 
+                Placeholder::make('fecha_prestamo')
+                    ->label('Fecha y Hora de Préstamo')
+                    ->content(fn ($record) => $record->fecha_prestamo?->format('d/m/Y H:i') ?? 'No aprobado aún')
+                    ->helperText('Fecha automática de cuando se aprobó'),
+
                 Select::make('status')
                     ->label('Estado')
                     ->options([
                         'pendiente' => 'Pendiente',
-                        'aprobado' => 'Aprobado',
                         'rechazado' => 'Rechazado',
                         'activo' => 'Activo',
                         'devuelto' => 'Devuelto',
                     ])
                     ->required(),
 
-                DatePicker::make('fecha_prestamo')
-                    ->label('Fecha de Préstamo')
-                    ->required(fn ($get) => $get('status') === 'aprobado' || $get('status') === 'activo'),
-
                 DatePicker::make('fecha_devolucion')
-                    ->label('Fecha de Devolución Estimada'),
+                    ->label('Fecha de Devolución Estimada')
+                    ->required(fn ($get) => $get('status') === 'activo')
+                    ->helperText('Fecha en que debe devolver el equipo'),
 
                 Textarea::make('notas')
                     ->label('Notas del Administrador')
@@ -113,14 +115,12 @@ class GestionSolicitudesResource extends Resource
                     ->label('Estado')
                     ->colors([
                         'warning' => 'pendiente',
-                        'success' => 'aprobado',
                         'danger' => 'rechazado',
                         'primary' => 'activo',
                         'secondary' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pendiente' => 'Pendiente',
-                        'aprobado' => 'Aprobado',
                         'rechazado' => 'Rechazado',
                         'activo' => 'Activo',
                         'devuelto' => 'Devuelto',
@@ -134,8 +134,9 @@ class GestionSolicitudesResource extends Resource
 
                 TextColumn::make('fecha_prestamo')
                     ->label('F. Préstamo')
-                    ->date('d/m/Y')
-                    ->placeholder('N/A'),
+                    ->dateTime('d/m/Y H:i')
+                    ->placeholder('N/A')
+                    ->tooltip('Fecha y hora de aprobación'),
 
                 TextColumn::make('fecha_devolucion')
                     ->label('F. Dev. Estimada')
@@ -158,7 +159,6 @@ class GestionSolicitudesResource extends Resource
                     ->label('Estado')
                     ->options([
                         'pendiente' => 'Pendiente',
-                        'aprobado' => 'Aprobado',
                         'rechazado' => 'Rechazado',
                         'activo' => 'Activo',
                         'devuelto' => 'Devuelto',
@@ -175,8 +175,6 @@ class GestionSolicitudesResource extends Resource
                     ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
                     ->requiresConfirmation()
                     ->fillForm(fn (Loan $record): array => [
-                        'fecha_prestamo' => now(),
-                        'fecha_devolucion' => $record->fecha_devolucion,
                         'motivo_original' => $record->motivo,
                     ])
                     ->form([
@@ -185,16 +183,18 @@ class GestionSolicitudesResource extends Resource
                             ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
                             ->columnSpanFull(),
                         
-                        DatePicker::make('fecha_prestamo')
-                            ->label('Fecha de Préstamo')
-                            ->minDate(now())
-                            ->required()
-                            ->helperText('Fecha en que se entrega el equipo'),
+                        Placeholder::make('info_fecha_prestamo')
+                            ->label('Fecha y Hora de Préstamo')
+                            ->content('Se registrará automáticamente al aprobar')
+                            ->helperText('El sistema registrará la fecha y hora exacta de aprobación'),
+                        
                         DatePicker::make('fecha_devolucion')
-                            ->label('Fecha de Devolución Estimada')
+                            ->label('Fecha Estimada de Devolución')
                             ->minDate(now()->addDay())
                             ->required()
-                            ->helperText('Fecha solicitada por el trabajador. Puedes modificarla si es necesario.'),
+                            ->helperText('¿Cuándo debe devolver el equipo?')
+                            ->default(now()->addWeek()),
+                        
                         Textarea::make('notas')
                             ->label('Notas del Admin')
                             ->rows(2)
@@ -229,9 +229,12 @@ class GestionSolicitudesResource extends Resource
                             return;
                         }
 
+                        // Fecha de préstamo automática con fecha y hora actual
+                        $fechaPrestamoAhora = now();
+
                         $record->update([
                             'status' => 'activo',
-                            'fecha_prestamo' => $data['fecha_prestamo'],
+                            'fecha_prestamo' => $fechaPrestamoAhora,
                             'fecha_devolucion' => $data['fecha_devolucion'],
                             'notas' => $data['notas'] ?? null,
                             'assigned_by' => Auth::id(),
@@ -241,14 +244,14 @@ class GestionSolicitudesResource extends Resource
                         $record->equipment->update([
                             'status' => 'prestado',
                             'user_id' => $record->user_id,
-                            'fecha_prestado' => $data['fecha_prestamo'],
+                            'fecha_prestado' => $fechaPrestamoAhora->toDateString(),
                             'fecha_devolucion' => $data['fecha_devolucion'],
                         ]);
 
                         Notification::make()
                             ->title('Solicitud aprobada')
                             ->success()
-                            ->body('El equipo ha sido asignado a ' . $record->user->name)
+                            ->body('El equipo ha sido asignado a ' . $record->user->name . ' el ' . $fechaPrestamoAhora->format('d/m/Y H:i'))
                             ->send();
                     }),
 
@@ -288,7 +291,7 @@ class GestionSolicitudesResource extends Resource
                     }),
 
                 EditAction::make()
-                    ->visible(fn (Loan $record): bool => in_array($record->status, ['aprobado', 'activo'])),
+                    ->visible(fn (Loan $record): bool => $record->status === 'activo'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

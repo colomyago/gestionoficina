@@ -37,7 +37,6 @@ class RecentLoansWidget extends BaseWidget
                     ->label('Estado')
                     ->colors([
                         'warning' => 'pendiente',
-                        'success' => 'aprobado',
                         'primary' => 'activo',
                         'success' => 'devuelto',
                         'danger' => 'rechazado',

@@ -77,12 +77,6 @@ class SolicitudPrestamoResource extends Resource
                     ->rows(3)
                     ->maxLength(500)
                     ->helperText('Explica brevemente por qué necesitas este equipo'),
-
-                DatePicker::make('fecha_devolucion')
-                    ->label('Fecha estimada de devolución')
-                    ->required()
-                    ->minDate(now()->addDay())
-                    ->helperText('¿Cuándo planeas devolver el equipo?'),
             ]);
     }
 
@@ -116,14 +110,12 @@ class SolicitudPrestamoResource extends Resource
                     ->label('Estado')
                     ->colors([
                         'warning' => 'pendiente',
-                        'success' => 'aprobado',
                         'danger' => 'rechazado',
                         'primary' => 'activo',
                         'secondary' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pendiente' => 'Pendiente',
-                        'aprobado' => 'Aprobado',
                         'rechazado' => 'Rechazado',
                         'activo' => 'Activo',
                         'devuelto' => 'Devuelto',
@@ -137,8 +129,9 @@ class SolicitudPrestamoResource extends Resource
 
                 TextColumn::make('fecha_prestamo')
                     ->label('Fecha Préstamo')
-                    ->date('d/m/Y')
-                    ->placeholder('N/A'),
+                    ->dateTime('d/m/Y H:i')
+                    ->placeholder('N/A')
+                    ->tooltip('Fecha y hora de aprobación'),
 
                 TextColumn::make('fecha_devolucion')
                     ->label('Devolución Estimada')
@@ -160,7 +153,6 @@ class SolicitudPrestamoResource extends Resource
                     ->label('Estado')
                     ->options([
                         'pendiente' => 'Pendiente',
-                        'aprobado' => 'Aprobado',
                         'rechazado' => 'Rechazado',
                         'activo' => 'Activo',
                         'devuelto' => 'Devuelto',
