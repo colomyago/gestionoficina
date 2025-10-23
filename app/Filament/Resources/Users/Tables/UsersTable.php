@@ -135,8 +135,6 @@ class UsersTable
                         $equipment->update([
                             'status' => 'prestado',
                             'user_id' => $record->id,
-                            'fecha_prestado' => now()->toDateString(),
-                            'fecha_devolucion' => $data['fecha_devolucion'],
                         ]);
 
                         Notification::make()

@@ -33,8 +33,6 @@ class EquipmentsRelationManager extends RelationManager
                 TextInput::make('status')
                     ->required()
                     ->default('disponible'),
-                DatePicker::make('fecha_prestado'),
-                DatePicker::make('fecha_devolucion'),
             ]);
     }
 
@@ -47,12 +45,6 @@ class EquipmentsRelationManager extends RelationManager
                     ->searchable(),
                 TextColumn::make('status')
                     ->searchable(),
-                TextColumn::make('fecha_prestado')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('fecha_devolucion')
-                    ->date()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

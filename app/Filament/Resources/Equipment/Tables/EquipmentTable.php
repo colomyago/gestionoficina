@@ -62,18 +62,6 @@ class EquipmentTable
                     ->searchable()
                     ->sortable()
                     ->placeholder('Sin asignar'),
-                    
-                TextColumn::make('fecha_prestado')
-                    ->label('F. Préstamo')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->placeholder('-'),
-                    
-                TextColumn::make('fecha_devolucion')
-                    ->label('F. Devolución')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->placeholder('-'),
             ])
             ->filters([
                 //
@@ -136,8 +124,6 @@ class EquipmentTable
                             $record->update([
                                 'status' => 'prestado',
                                 'user_id' => $data['user_id'],
-                                'fecha_prestado' => now()->toDateString(),
-                                'fecha_devolucion' => $data['fecha_devolucion'],
                             ]);
 
                             $user = \App\Models\User::find($data['user_id']);
@@ -167,6 +153,16 @@ class EquipmentTable
                                 ->helperText('Explica por qué necesitas este equipo'),
                         ])
                         ->action(function ($record, array $data) {
+                            // Validar que el equipo esté disponible (no en baja ni en mantenimiento)
+                            if ($record->status !== 'disponible') {
+                                Notification::make()
+                                    ->title('Equipo no disponible')
+                                    ->danger()
+                                    ->body('Este equipo no está disponible para préstamo. Estado actual: ' . $record->status)
+                                    ->send();
+                                return;
+                            }
+
                             // Validar que no exista una solicitud pendiente o activa
                             $existingSolicitud = Loan::where('equipment_id', $record->id)
                                 ->where('user_id', Auth::id())
@@ -243,8 +239,6 @@ class EquipmentTable
                             $record->update([
                                 'status' => 'mantenimiento',
                                 'user_id' => null,
-                                'fecha_prestado' => null,
-                                'fecha_devolucion' => null,
                             ]);
 
                             Notification::make()

@@ -16,15 +16,9 @@ class EquipmentInfolist
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('status'),
-                TextEntry::make('user_id')
-                    ->numeric()
-                    ->placeholder('-'),
-                TextEntry::make('fecha_prestado')
-                    ->date()
-                    ->placeholder('-'),
-                TextEntry::make('fecha_devolucion')
-                    ->date()
-                    ->placeholder('-'),
+                TextEntry::make('user.name')
+                    ->label('Asignado a')
+                    ->placeholder('Sin asignar'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

@@ -16,13 +16,6 @@ class Equipment extends Model
         'description',
         'status',
         'user_id',
-        'fecha_prestado',
-        'fecha_devolucion'
-    ];
-
-    protected $casts = [
-        'fecha_prestado' => 'date',
-        'fecha_devolucion' => 'date',
     ];
 
     public function user()

@@ -240,12 +240,10 @@ class GestionSolicitudesResource extends Resource
                             'assigned_by' => Auth::id(),
                         ]);
 
-                        // Actualizar el equipo con las fechas
+                        // Actualizar el equipo
                         $record->equipment->update([
                             'status' => 'prestado',
                             'user_id' => $record->user_id,
-                            'fecha_prestado' => $fechaPrestamoAhora->toDateString(),
-                            'fecha_devolucion' => $data['fecha_devolucion'],
                         ]);
 
                         Notification::make()

@@ -175,8 +175,6 @@ class SolicitudPrestamoResource extends Resource
                         $record->equipment->update([
                             'status' => 'disponible',
                             'user_id' => null,
-                            'fecha_prestado' => null,
-                            'fecha_devolucion' => null,
                         ]);
                         
                         Notification::make()

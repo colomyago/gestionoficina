@@ -14,6 +14,9 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
@@ -56,13 +59,54 @@ class MisEquiposResource extends Resource
         return false; // No pueden eliminar equipos
     }
 
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Placeholder::make('info')
+                    ->label('Información del Equipo')
+                    ->content('Detalles del equipo asignado')
+                    ->columnSpanFull(),
+
+                TextInput::make('name')
+                    ->label('Nombre')
+                    ->disabled(),
+
+                TextInput::make('codigo')
+                    ->label('Código')
+                    ->disabled(),
+
+                TextInput::make('categoria')
+                    ->label('Categoría')
+                    ->disabled(),
+
+                Textarea::make('description')
+                    ->label('Descripción')
+                    ->disabled()
+                    ->columnSpanFull(),
+
+                Placeholder::make('loan_info')
+                    ->label('Información del Préstamo')
+                    ->content(fn ($record) => 
+                        $record->activeLoan 
+                            ? 'Préstamo desde: ' . $record->activeLoan->fecha_prestamo?->format('d/m/Y H:i') . 
+                              ' | Devolución estimada: ' . $record->activeLoan->fecha_devolucion?->format('d/m/Y')
+                            : 'Sin préstamo activo'
+                    )
+                    ->columnSpanFull(),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                // Solo mostrar equipos asignados al usuario actual
-                return $query->where('user_id', Auth::id())
-                    ->where('status', 'prestado');
+                // Mostrar equipos que tienen un préstamo activo del usuario actual
+                // Esto incluye equipos en estado 'prestado' y 'mantenimiento'
+                return $query->whereHas('activeLoan', function ($loanQuery) {
+                    $loanQuery->where('user_id', Auth::id())
+                              ->where('status', 'activo');
+                });
             })
             ->columns([
                 TextColumn::make('name')
@@ -85,31 +129,32 @@ class MisEquiposResource extends Resource
                 BadgeColumn::make('status')
                     ->label('Estado')
                     ->colors([
-                        'warning' => 'prestado',
-                        'info' => 'mantenimiento',
+                        'success' => 'prestado',
+                        'warning' => 'mantenimiento',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'prestado' => 'En mi poder',
+                        'prestado' => 'En Uso',
                         'mantenimiento' => 'En Mantenimiento',
                         default => $state,
                     }),
 
-                TextColumn::make('fecha_prestado')
+                TextColumn::make('activeLoan.fecha_prestamo')
                     ->label('Desde')
-                    ->date('d/m/Y')
-                    ->sortable(),
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->placeholder('-'),
 
-                TextColumn::make('fecha_devolucion')
+                TextColumn::make('activeLoan.fecha_devolucion')
                     ->label('Devolución Estimada')
                     ->date('d/m/Y')
                     ->sortable()
                     ->color(fn ($record) => 
-                        $record->fecha_devolucion && $record->fecha_devolucion->isPast() 
+                        $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast() 
                             ? 'danger' 
                             : 'gray'
                     )
                     ->tooltip(fn ($record) => 
-                        $record->fecha_devolucion && $record->fecha_devolucion->isPast()
+                        $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast()
                             ? '⚠️ Fecha vencida'
                             : null
                     ),
@@ -127,11 +172,12 @@ class MisEquiposResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
 
-                    // ACCIÓN: Devolver equipo
+                    // ACCIÓN: Devolver equipo (solo si está prestado)
                     Action::make('devolver')
                         ->label('Devolver Equipo')
                         ->icon('heroicon-o-arrow-uturn-left')
                         ->color('success')
+                        ->visible(fn ($record): bool => $record->status === 'prestado')
                         ->requiresConfirmation()
                         ->modalHeading('¿Devolver este equipo?')
                         ->modalDescription(fn ($record) => 
@@ -164,8 +210,6 @@ class MisEquiposResource extends Resource
                             $record->update([
                                 'status' => 'disponible',
                                 'user_id' => null,
-                                'fecha_prestado' => null,
-                                'fecha_devolucion' => null,
                             ]);
 
                             Notification::make()
@@ -175,11 +219,12 @@ class MisEquiposResource extends Resource
                                 ->send();
                         }),
 
-                    // ACCIÓN: Reportar problema (enviar a mantenimiento)
+                    // ACCIÓN: Reportar problema (solo si está prestado, no en mantenimiento)
                     Action::make('reportar_problema')
                         ->label('Reportar Problema')
                         ->icon('heroicon-o-exclamation-triangle')
                         ->color('warning')
+                        ->visible(fn ($record): bool => $record->status === 'prestado')
                         ->form([
                             Textarea::make('descripcion_problema')
                                 ->label('Descripción del problema')
@@ -220,8 +265,6 @@ class MisEquiposResource extends Resource
                             $record->update([
                                 'status' => 'mantenimiento',
                                 'user_id' => null,
-                                'fecha_prestado' => null,
-                                'fecha_devolucion' => null,
                             ]);
 
                             Notification::make()
@@ -233,9 +276,9 @@ class MisEquiposResource extends Resource
                 ])
             ])
             ->emptyStateHeading('No tienes equipos asignados')
-            ->emptyStateDescription('Cuando se te asigne un equipo, aparecerá aquí.')
+            ->emptyStateDescription('Cuando se te asigne un equipo, aparecerá aquí. Los equipos se mostrarán tanto si están en tu poder como si están en mantenimiento.')
             ->emptyStateIcon('heroicon-o-computer-desktop')
-            ->defaultSort('fecha_prestado', 'desc');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array

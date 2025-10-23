@@ -66,14 +66,6 @@ class EquipmentForm
                     ->searchable()
                     ->nullable()
                     ->helperText('Usuario que actualmente tiene el equipo'),
-                    
-                DatePicker::make('fecha_prestado')
-                    ->label('Fecha de Préstamo')
-                    ->nullable(),
-                    
-                DatePicker::make('fecha_devolucion')
-                    ->label('Fecha de Devolución Estimada')
-                    ->nullable(),
             ]);
     }
 }
