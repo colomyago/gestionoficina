@@ -71,8 +71,9 @@ class MantenimientoResource extends Resource
                 Select::make('assigned_to')
                     ->label('Asignado a')
                     ->options(function () {
-                        return \App\Models\User::where('role', 'mantenimiento')
-                            ->pluck('name', 'id');
+                        return \App\Models\User::whereHas('role', function ($query) {
+                            $query->where('code', 'mantenimiento');
+                        })->pluck('name', 'id');
                     })
                     ->searchable()
                     ->nullable()
