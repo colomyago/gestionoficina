@@ -11,31 +11,44 @@ Este documento explica cómo funciona el sistema de solicitudes de préstamos y 
 ### 1. **TRABAJADOR** (role: 'trabajador')
 
 #### ✅ **Puede ver:**
+- **Mis Equipos** (MisEquiposResource)
+  - Solo los equipos que tiene asignados actualmente
+  - Estadísticas: equipos activos, por vencer, vencidos
+  - Estado de cada equipo
+
 - **Mis Solicitudes** (SolicitudPrestamoResource)
   - Sus propias solicitudes de préstamos
-  - Estado de cada solicitud (pendiente, aprobado, rechazado, activo, devuelto)
+  - Estado de cada solicitud (pendiente, rechazado, activo, devuelto)
   - Historial completo de préstamos
 
 #### ✅ **Puede hacer:**
-1. **Solicitar un equipo:**
+1. **Desde "Mis Equipos":**
+   - **Devolver equipo:**
+     - Click en equipo → "Devolver Equipo"
+     - Confirma la devolución
+     - El equipo vuelve a disponible
+     - El préstamo cambia a devuelto
+   
+   - **Reportar problema:**
+     - Click en equipo → "Reportar Problema"
+     - Describe el problema
+     - El equipo se devuelve automáticamente
+     - Se crea solicitud de mantenimiento
+     - El equipo cambia a mantenimiento
+
+2. **Solicitar un equipo:**
    - Navegar a "Equipos" → Click en equipo disponible → "Solicitar Préstamo"
    - O ir a "Mis Solicitudes" → "Nueva Solicitud"
    - Llena el formulario:
      - Selecciona el equipo (solo muestra disponibles)
      - Escribe el motivo
-     - Indica fecha estimada de devolución
    - La solicitud queda en estado `pendiente`
 
-2. **Devolver un equipo:**
-   - En "Mis Solicitudes" → Click en solicitud activa → "Devolver"
-   - El equipo vuelve a estado `disponible`
-   - La solicitud cambia a `devuelto`
-
-3. **Enviar equipo a mantenimiento:**
-   - En "Equipos" → Click en equipo (disponible o prestado) → "Enviar a Mantenimiento"
-   - Describe el problema
-   - Se crea una solicitud de mantenimiento
-   - El equipo cambia a estado `mantenimiento`
+3. **Ver estadísticas en tiempo real:**
+   - Equipos en mi poder
+   - Equipos por vencer (próximos 7 días)
+   - Equipos vencidos (pasó fecha de devolución)
+   - Total de préstamos históricos
 
 ---
 
@@ -56,8 +69,9 @@ Este documento explica cómo funciona el sistema de solicitudes de préstamos y 
 1. **Gestionar solicitudes de préstamos:**
    - **Aprobar:**
      - Click en "Aprobar" en solicitud pendiente
-     - Define fecha de préstamo y devolución
-     - Agrega notas
+     - Sistema registra fecha/hora automáticamente
+     - Define fecha estimada de devolución
+     - Agrega notas (opcional)
      - El equipo cambia a `prestado`
      - La solicitud cambia a `activo`
      - Se asigna el equipo al usuario
@@ -71,12 +85,21 @@ Este documento explica cómo funciona el sistema de solicitudes de préstamos y 
    - **Editar:**
      - Modificar fechas, notas, estado
 
-2. **Gestionar mantenimiento:**
+2. **Asignar equipos directamente (SIN solicitud previa):**
+   - Desde la tabla de **Equipos**: Click en "Asignar Equipo"
+   - Desde la tabla de **Usuarios**: Click en "Asignar Equipo"
+   - Selecciona trabajador/equipo
+   - Define fecha estimada de devolución
+   - Agrega notas
+   - El equipo se asigna inmediatamente como `activo`
+   - No requiere solicitud ni aprobación previa
+
+3. **Gestionar mantenimiento:**
    - Asignar técnicos a solicitudes
    - Ver estado de reparaciones
    - Dar de baja equipos irreparables
 
-3. **CRUD completo:**
+4. **CRUD completo:**
    - Equipos: crear, editar, eliminar
    - Usuarios: crear, editar, eliminar, asignar roles
 
@@ -157,7 +180,6 @@ Este documento explica cómo funciona el sistema de solicitudes de préstamos y 
 
 ### **Tabla: loans**
 - `pendiente` → Esperando aprobación del admin
-- `aprobado` → Aprobado pero aún no entregado (opcional)
 - `rechazado` → Rechazado por el admin
 - `activo` → Equipo prestado y en uso
 - `devuelto` → Equipo devuelto
