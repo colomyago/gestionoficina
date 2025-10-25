@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
 {
@@ -42,7 +43,15 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return UsersTable::configure($table);
+        $table = UsersTable::configure($table);
+    
+        return $table->actions([
+            ...$table->getActions(), // Mantiene las acciones existentes
+            Impersonate::make()
+            ->redirectTo('/admin')
+
+            ,
+        ]);
     }
 
     public static function getRelations(): array
