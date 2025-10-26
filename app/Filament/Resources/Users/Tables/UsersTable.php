@@ -44,7 +44,7 @@ class UsersTable
                 
                 TextColumn::make('activeLoans')
                     ->label(__('Active loans'))
-                    ->counts('activeLoans')
+                    ->getStateUsing(fn ($record) => $record->activeLoans()->count())
                     ->badge()
                     ->color('primary')
                     ->tooltip(__('Number of devices currently on loan')),
