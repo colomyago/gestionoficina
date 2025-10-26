@@ -24,30 +24,30 @@ class PendingMaintenanceWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('equipment.codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('requestedBy.name')
-                    ->label('Solicitado por')
+                    ->label(__('Requested by'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('descripcion_problema')
-                    ->label('Problema')
+                    ->label(__('Problem'))
                     ->limit(50)
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('fecha_solicitud')
-                    ->label('Fecha')
+                    ->label(__('Date'))
                     ->date('d/m/Y')
                     ->sortable(),
             ])
-            ->heading('Solicitudes de Mantenimiento Pendientes')
-            ->emptyStateHeading('No hay solicitudes pendientes')
-            ->emptyStateDescription('Todas las solicitudes están asignadas')
+            ->heading(__('Pending Maintenance Requests'))
+            ->emptyStateHeading(__('No pending requests'))
+            ->emptyStateDescription(__('All requests are assigned'))
             ->emptyStateIcon('heroicon-o-check-circle');
     }
 

@@ -35,23 +35,23 @@ class MisEquiposStatsWidget extends BaseWidget
             ->count();
 
         return [
-            Stat::make('Equipos en mi poder', $equiposActivos)
-                ->description('Equipos actualmente asignados')
+            Stat::make(__('Devices in my possession'), $equiposActivos)
+                ->description(__('Currently assigned devices'))
                 ->descriptionIcon('heroicon-o-computer-desktop')
                 ->color('primary'),
 
-            Stat::make('Por vencer (7 días)', $equiposPorVencer)
-                ->description('Equipos a devolver pronto')
+            Stat::make(__('Due soon (7 days)'), $equiposPorVencer)
+                ->description(__('Devices to return soon'))
                 ->descriptionIcon('heroicon-o-clock')
                 ->color('warning'),
 
-            Stat::make('Vencidos', $equiposVencidos)
-                ->description('Equipos que debiste devolver')
+            Stat::make(__('Overdue'), $equiposVencidos)
+                ->description(__('Devices you should have returned'))
                 ->descriptionIcon('heroicon-o-exclamation-triangle')
                 ->color('danger'),
 
-            Stat::make('Total histórico', $totalPrestamos)
-                ->description('Préstamos totales realizados')
+            Stat::make(__('Total history'), $totalPrestamos)
+                ->description(__('Total loans made'))
                 ->descriptionIcon('heroicon-o-chart-bar')
                 ->color('success'),
         ];

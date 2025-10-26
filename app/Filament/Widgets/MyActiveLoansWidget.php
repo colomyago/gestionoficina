@@ -24,25 +24,25 @@ class MyActiveLoansWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('equipment.codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('fecha_prestamo')
-                    ->label('Fecha Préstamo')
+                    ->label(__('Loan Date'))
                     ->date('d/m/Y'),
 
                 Tables\Columns\TextColumn::make('fecha_devolucion')
-                    ->label('Fecha Devolución')
+                    ->label(__('Return Date'))
                     ->date('d/m/Y')
                     ->color(fn ($record) => $record->fecha_devolucion < now() ? 'danger' : 'success'),
             ])
-            ->heading('Mis Equipos Prestados')
-            ->emptyStateHeading('No tienes equipos prestados')
-            ->emptyStateDescription('Solicita un equipo desde el panel de Solicitudes')
+            ->heading(__('My Borrowed Devices'))
+            ->emptyStateHeading(__('You have no borrowed devices'))
+            ->emptyStateDescription(__('Request a device from the Requests panel'))
             ->emptyStateIcon('heroicon-o-inbox');
     }
 

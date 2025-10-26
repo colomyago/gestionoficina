@@ -24,31 +24,37 @@ class RecentLoansWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Usuario')
+                    ->label(__('User'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->colors([
                         'warning' => 'pendiente',
                         'primary' => 'activo',
                         'success' => 'devuelto',
                         'danger' => 'rechazado',
                     ])
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pendiente' => __('Pending'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
+                        'rechazado' => __('Rejected'),
+                        default => ucfirst($state),
+                    }),
 
                 Tables\Columns\TextColumn::make('fecha_solicitud')
-                    ->label('Fecha')
+                    ->label(__('Date'))
                     ->date('d/m/Y')
                     ->sortable(),
             ])
-            ->heading('Préstamos Recientes');
+            ->heading(__('Recent Loans'));
     }
 
     public static function canView(): bool

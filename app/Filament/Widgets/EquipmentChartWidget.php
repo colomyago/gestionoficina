@@ -13,24 +13,24 @@ class EquipmentChartWidget extends ChartWidget
 
     public function getHeading(): string
     {
-        return 'Equipos por Estado';
+        return __('Equipment by Status');
     }
 
     protected function getFilters(): ?array
     {
         return [
-            'all' => 'Todas las categorías',
-            'Computadoras' => 'Computadoras',
-            'Laptops' => 'Laptops',
-            'Tablets' => 'Tablets',
-            'Monitores' => 'Monitores',
-            'Impresoras' => 'Impresoras',
-            'Audio' => 'Audio',
-            'Redes' => 'Redes',
-            'Almacenamiento' => 'Almacenamiento',
-            'Periféricos' => 'Periféricos',
-            'Proyección' => 'Proyección',
-            'Otros' => 'Otros',
+            'all' => __('All categories'),
+            'Computadoras' => __('Computers'),
+            'Laptops' => __('Laptops'),
+            'Tablets' => __('Tablets'),
+            'Monitores' => __('Monitors'),
+            'Impresoras' => __('Printers'),
+            'Audio' => __('Audio'),
+            'Redes' => __('Networks'),
+            'Almacenamiento' => __('Storage'),
+            'Periféricos' => __('Peripherals'),
+            'Proyección' => __('Projection'),
+            'Otros' => __('Others'),
         ];
     }
 
@@ -51,7 +51,7 @@ class EquipmentChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Equipos',
+                    'label' => __('Equipment'),
                     'data' => [$disponible, $prestado, $mantenimiento, $baja],
                     'backgroundColor' => [
                         'rgb(34, 197, 94)',
@@ -61,7 +61,12 @@ class EquipmentChartWidget extends ChartWidget
                     ],
                 ],
             ],
-            'labels' => ['Disponible', 'Prestado', 'Mantenimiento', 'Baja'],
+            'labels' => [
+                __('Available'),
+                __('On Loan'),
+                __('Maintenance'),
+                __('Decommissioned')
+            ],
         ];
     }
 
