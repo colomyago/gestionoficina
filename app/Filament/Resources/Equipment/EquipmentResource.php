@@ -54,6 +54,25 @@ class EquipmentResource extends Resource
         ];
     }
 
+    public static function getLabel(): string
+    {
+        return __('Device');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('Devices');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Devices');
+    }
+    
+
+
+
+
     public static function getPages(): array
     {
         return [

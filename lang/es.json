@@ -100,5 +100,11 @@
     "The selected device is no longer available.": "El equipo seleccionado ya no está disponible.",
     "Direct assignment by administrator": "Asignación directa por administrador",
     "Device assigned successfully": "Equipo asignado exitosamente",
-    "has been assigned to": "ha sido asignado a"
+    "has been assigned to": "ha sido asignado a",
+    "Devices": "Dispositivos",
+    "My requests": "Mis solicitudes",
+    "Maintenance": "Mantenimiento",
+    "Users": "Usuarios",
+    "Loan management": "Gestión de Préstamos"
+
 }

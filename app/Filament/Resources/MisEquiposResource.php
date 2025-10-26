@@ -148,12 +148,12 @@ class MisEquiposResource extends Resource
                     ->label(__('Estimated Return'))
                     ->date('d/m/Y')
                     ->sortable()
-                    ->color(fn ($record) => 
+                    ->color(fn ($record) =>
                         $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast() 
-                            ? 'danger' 
+                            ? 'danger'
                             : 'gray'
                     )
-                    ->tooltip(fn ($record) => 
+                    ->tooltip(fn ($record) =>
                         $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast()
                             ? '⚠️ Fecha vencida'
                             : null
@@ -180,7 +180,7 @@ class MisEquiposResource extends Resource
                         ->visible(fn ($record): bool => $record->status === 'prestado')
                         ->requiresConfirmation()
                         ->modalHeading(__('Return this device?'))
-                        ->modalDescription(fn ($record) => 
+                        ->modalDescription(fn ($record) =>
                             __('You are about to return') . ': ' . $record->name . ' (' . $record->codigo . ')'
                         )
                         ->modalSubmitActionLabel(__('Yes, return'))
@@ -246,7 +246,7 @@ class MisEquiposResource extends Resource
                                 $activeLoan->update([
                                     'status' => 'devuelto',
                                     'fecha_devolucion_real' => now(),
-                                    'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') . 
+                                    'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') .
                                                'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
                                                $data['descripcion_problema']
                                 ]);

@@ -61,6 +61,30 @@ class UserResource extends Resource
         ];
     }
 
+    public static function getLabel(): string
+    {
+        return __('Users');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('Users');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Users');
+    }
+    
+
+
+
+
+
+
+
+
+
     public static function getPages(): array
     {
         return [

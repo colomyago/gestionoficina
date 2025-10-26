@@ -211,6 +211,23 @@ class SolicitudPrestamoResource extends Resource
         ];
     }
 
+
+    public static function getLabel(): string
+    {
+        return __('My requests');  
+    }
+
+
+    public static function getPluralLabel(): string
+    {
+        return __('My requests');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('My requests');
+    }
+
     // Hook antes de crear la solicitud
     public static function beforeCreate(array $data): array
     {

@@ -306,6 +306,26 @@ class GestionSolicitudesResource extends Resource
         ];
     }
 
+    public static function getLabel(): string
+    {
+        return __('Loan management');  
+    }
+
+
+    public static function getPluralLabel(): string
+    {
+        return __('Loan management')    ;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Loan management');
+    }
+
+
+
+
+
     public static function getPages(): array
     {
         return [

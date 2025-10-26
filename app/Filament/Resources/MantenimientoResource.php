@@ -298,6 +298,23 @@ class MantenimientoResource extends Resource
         ];
     }
 
+    public static function getLabel(): string
+    {
+        return __('Maintenance');  
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('Maintenance');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Maintenance');
+    }
+
+
+
     public static function getPages(): array
     {
         return [
