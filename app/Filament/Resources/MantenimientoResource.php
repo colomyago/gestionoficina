@@ -49,27 +49,27 @@ class MantenimientoResource extends Resource
         return $schema
             ->components([
                 Placeholder::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->content(fn ($record) => $record->equipment->name ?? 'N/A'),
 
                 Placeholder::make('equipment.codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->content(fn ($record) => $record->equipment->codigo ?? 'N/A'),
 
                 Placeholder::make('requestedBy.name')
-                    ->label('Solicitado por')
+                    ->label(__('Requested by'))
                     ->content(fn ($record) => $record->requestedBy->name ?? 'N/A'),
 
                 Placeholder::make('descripcion_problema')
-                    ->label('Descripción del Problema')
+                    ->label(__('Problem description'))
                     ->content(fn ($record) => $record->descripcion_problema ?? 'N/A'),
 
                 Placeholder::make('fecha_solicitud')
-                    ->label('Fecha de Solicitud')
+                    ->label(__('Request Date'))
                     ->content(fn ($record) => $record->fecha_solicitud?->format('d/m/Y H:i') ?? 'N/A'),
 
                 Select::make('assigned_to')
-                    ->label('Asignado a')
+                    ->label(__('Assigned to'))
                     ->options(function () {
                         return \App\Models\User::whereHas('role', function ($query) {
                             $query->where('code', 'mantenimiento');
@@ -80,7 +80,7 @@ class MantenimientoResource extends Resource
                     ->helperText('Técnico responsable'),
 
                 Select::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->options([
                         'pendiente' => 'Pendiente',
                         'en_proceso' => 'En Proceso',
@@ -90,13 +90,13 @@ class MantenimientoResource extends Resource
                     ->required(),
 
                 Textarea::make('solucion')
-                    ->label('Solución Aplicada')
+                    ->label(__('Solution'))
                     ->rows(3)
                     ->maxLength(1000)
                     ->helperText('Describe la solución aplicada'),
 
                 Select::make('resultado')
-                    ->label('Resultado')
+                    ->label(__('Result'))
                     ->options([
                         'pendiente' => 'Pendiente',
                         'reparado' => 'Reparado',

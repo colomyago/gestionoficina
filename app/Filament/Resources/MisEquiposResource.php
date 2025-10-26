@@ -64,29 +64,29 @@ class MisEquiposResource extends Resource
         return $schema
             ->components([
                 Placeholder::make('info')
-                    ->label('Información del Equipo')
+                    ->label(__('Device info'))
                     ->content('Detalles del equipo asignado')
                     ->columnSpanFull(),
 
                 TextInput::make('name')
-                    ->label('Nombre')
+                    ->label(__('Name'))
                     ->disabled(),
 
                 TextInput::make('codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->disabled(),
 
                 TextInput::make('categoria')
-                    ->label('Categoría')
+                    ->label(__('Category'))
                     ->disabled(),
 
                 Textarea::make('description')
-                    ->label('Descripción')
+                    ->label(__('Description'))
                     ->disabled()
                     ->columnSpanFull(),
 
                 Placeholder::make('loan_info')
-                    ->label('Información del Préstamo')
+                    ->label(__('Loan Info'))
                     ->content(fn ($record) => 
                         $record->activeLoan 
                             ? 'Préstamo desde: ' . $record->activeLoan->fecha_prestamo?->format('d/m/Y H:i') . 

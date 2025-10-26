@@ -27,22 +27,22 @@ class EquipmentTable
         return $table
             ->columns([
                 TextColumn::make('codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->searchable()
                     ->sortable(),
                     
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
                     
                 TextColumn::make('categoria')
-                    ->label('Categoría')
+                    ->label(__('Category'))
                     ->searchable()
                     ->sortable(),
                     
                 BadgeColumn::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->colors([
                         'success' => 'disponible',
                         'warning' => 'prestado',
@@ -58,7 +58,7 @@ class EquipmentTable
                     }),
                     
                 TextColumn::make('user.name')
-                    ->label('Usuario')
+                    ->label(__('User'))
                     ->searchable()
                     ->sortable()
                     ->placeholder('Sin asignar'),

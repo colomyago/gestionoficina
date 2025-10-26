@@ -16,18 +16,18 @@ class EquipmentForm
         return $schema  
             ->components([
                 TextInput::make('name')
-                    ->label('Nombre del Equipo')
+                    ->label(__('Device name'))
                     ->required()
                     ->maxLength(255),
                     
                 TextInput::make('codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->helperText('Código único del equipo (ej: LAP-001)'),
                     
                 Select::make('categoria')
-                    ->label('Categoría')
+                    ->label(__('Category'))
                     ->options([
                         'Computadoras' => 'Computadoras',
                         'Proyección' => 'Proyección',
@@ -45,12 +45,12 @@ class EquipmentForm
                     ->nullable(),
                     
                 Textarea::make('description')
-                    ->label('Descripción')
+                    ->label(__('Description'))
                     ->columnSpanFull()
                     ->rows(3),
                     
                 Select::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->options([
                         'disponible' => 'Disponible',
                         'prestado' => 'Prestado',
@@ -61,7 +61,7 @@ class EquipmentForm
                     ->required(),
                     
                 Select::make('user_id')
-                    ->label('Asignado a')
+                    ->label(__('Assigned to'))
                     ->relationship('user', 'name')
                     ->searchable()
                     ->nullable()

@@ -15,21 +15,19 @@ class RolesTable
         return $table
             ->columns([
                 TextColumn::make('code')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->translateLabel()
                     ->searchable(),
                 TextColumn::make('name')
-                    ->label('Descripción')
+                    ->label(__('Description'))
                     ->translateLabel()
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->label('Creado en')
                     ->translateLabel()
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label('Modificado en')
                     ->translateLabel()
                     ->dateTime()
                     ->sortable()
