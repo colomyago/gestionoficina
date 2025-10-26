@@ -49,27 +49,27 @@ class MantenimientoResource extends Resource
         return $schema
             ->components([
                 Placeholder::make('equipment.name')
-                    ->label(__('Device'))
+                    ->label(__('Device')) // Equipo
                     ->content(fn ($record) => $record->equipment->name ?? 'N/A'),
 
                 Placeholder::make('equipment.codigo')
-                    ->label(__('Code'))
+                    ->label(__('Code')) // Código
                     ->content(fn ($record) => $record->equipment->codigo ?? 'N/A'),
 
                 Placeholder::make('requestedBy.name')
-                    ->label(__('Requested by'))
+                    ->label(__('Requested by')) // Solicitado por
                     ->content(fn ($record) => $record->requestedBy->name ?? 'N/A'),
 
                 Placeholder::make('descripcion_problema')
-                    ->label(__('Problem description'))
+                    ->label(__('Problem description')) // Descripción del Problema
                     ->content(fn ($record) => $record->descripcion_problema ?? 'N/A'),
 
                 Placeholder::make('fecha_solicitud')
-                    ->label(__('Request Date'))
+                    ->label(__('Request Date')) // Fecha de Solicitud
                     ->content(fn ($record) => $record->fecha_solicitud?->format('d/m/Y H:i') ?? 'N/A'),
 
                 Select::make('assigned_to')
-                    ->label(__('Assigned to'))
+                    ->label(__('Assigned to')) // Asignado a
                     ->options(function () {
                         return \App\Models\User::whereHas('role', function ($query) {
                             $query->where('code', 'mantenimiento');
@@ -82,15 +82,15 @@ class MantenimientoResource extends Resource
                 Select::make('status')
                     ->label(__('Status'))
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'en_proceso' => 'En Proceso',
-                        'completado' => 'Completado',
-                        'rechazado' => 'Rechazado',
+                        'pendiente' => __('Pending'),
+                        'en_proceso' => __('In Progress'),
+                        'completado' => __('Completed'),
+                        'rechazado' => __('Rejected'),
                     ])
                     ->required(),
 
                 Textarea::make('solucion')
-                    ->label(__('Solution'))
+                    ->label(__('Solution')) // Solución
                     ->rows(3)
                     ->maxLength(1000)
                     ->helperText('Describe la solución aplicada'),
@@ -98,12 +98,13 @@ class MantenimientoResource extends Resource
                 Select::make('resultado')
                     ->label(__('Result'))
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'reparado' => 'Reparado',
-                        'dado_de_baja' => 'Dado de Baja',
+                        'pendiente' => __('Pending'),
+                        'reparado' => __('Repaired'),
+                        'dado_de_baja' => __('Decommissioned'),
                     ])
                     ->required()
                     ->default('pendiente'),
+
             ]);
     }
 
@@ -112,85 +113,86 @@ class MantenimientoResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device')) // Equipo
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('equipment.codigo')
-                    ->label('Código')
+                    ->label(__('Code')) // Código
                     ->searchable(),
 
                 TextColumn::make('requestedBy.name')
-                    ->label('Solicitado por')
+                    ->label(__('Requested by'))//Solicitado por
                     ->searchable(),
 
                 BadgeColumn::make('status')
-                    ->label('Estado')
-                    ->colors([
-                        'warning' => 'pendiente',
-                        'info' => 'en_proceso',
-                        'success' => 'completado',
-                        'danger' => 'rechazado',
-                    ])
+                        ->label(__('Status'))
+                        ->colors([
+                            'warning' => 'pendiente',
+                            'info' => 'en_proceso',
+                            'success' => 'completado',
+                            'danger' => 'rechazado',
+                        ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pendiente' => 'Pendiente',
-                        'en_proceso' => 'En Proceso',
-                        'completado' => 'Completado',
-                        'rechazado' => 'Rechazado',
+                        'pendiente' => __('Pending'),
+                        'en_proceso' => __('In Progress'),
+                        'completado' => __('Completed'),
+                        'rechazado' => __('Rejected'),
                         default => $state,
                     }),
 
                 BadgeColumn::make('resultado')
-                    ->label('Resultado')
+                     ->label(__('Result'))
                     ->colors([
                         'secondary' => 'pendiente',
                         'success' => 'reparado',
                         'danger' => 'dado_de_baja',
                     ])
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pendiente' => 'Pendiente',
-                        'reparado' => 'Reparado',
-                        'dado_de_baja' => 'Dado de Baja',
+                      ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pendiente' => __('Pending'),
+                        'reparado' => __('Repaired'),
+                        'dado_de_baja' => __('Decommissioned'),
                         default => $state,
                     }),
 
                 TextColumn::make('assignedTo.name')
-                    ->label('Asignado a')
+                    ->label(__('Assigned to')) // Asignado a
                     ->placeholder('Sin asignar'),
 
                 TextColumn::make('fecha_solicitud')
-                    ->label('Fecha')
+                    ->label(__('Request Date')) // Fecha de Solicitud
                     ->dateTime('d/m/Y')
                     ->sortable(),
 
                 TextColumn::make('descripcion_problema')
-                    ->label('Problema')
+                    ->label(__('Problem')) // Problema
                     ->limit(30)
                     ->wrap(),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label('Estado')
+                 SelectFilter::make('status')
+                    ->label(__('Status'))
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'en_proceso' => 'En Proceso',
-                        'completado' => 'Completado',
-                        'rechazado' => 'Rechazado',
+                        'pendiente' => __('Pending'),
+                        'en_proceso' => __('In Progress'),
+                        'completado' => __('Completed'),
+                        'rechazado' => __('Rejected'),
                     ]),
 
-                SelectFilter::make('resultado')
-                    ->label('Resultado')
+
+                 SelectFilter::make('resultado')
+                    ->label(__('Result'))
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'reparado' => 'Reparado',
-                        'dado_de_baja' => 'Dado de Baja',
+                        'pendiente' => __('Pending'),
+                        'reparado' => __('Repaired'),
+                        'dado_de_baja' => __('Decommissioned'),
                     ]),
             ])
             ->recordActions([
                 ViewAction::make(),
-                
+
                 Action::make('tomar')
-                    ->label('Tomar')
+                    ->label(__('Take')) // Tomar
                     ->icon('heroicon-o-hand-raised')
                     ->color('info')
                     ->visible(fn (MaintenanceRequest $record): bool => 
@@ -210,7 +212,7 @@ class MantenimientoResource extends Resource
                     }),
 
                 Action::make('reparar')
-                    ->label('Marcar como Reparado')
+                    ->label(__('Mark as Repaired')) // Marcar como Reparado
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->visible(fn (MaintenanceRequest $record): bool => 
@@ -244,7 +246,7 @@ class MantenimientoResource extends Resource
                     }),
 
                 Action::make('dar_de_baja')
-                    ->label('Dar de Baja')
+                    ->label(__('Cancel')) // Dar de Baja
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->visible(fn (MaintenanceRequest $record): bool => 
@@ -254,7 +256,7 @@ class MantenimientoResource extends Resource
                     ->requiresConfirmation()
                     ->form([
                         Textarea::make('solucion')
-                            ->label('Motivo de la baja')
+                            ->label(__('Cancel reason')) // Motivo de la Baja
                             ->required()
                             ->rows(3)
                             ->helperText('Explica por qué se da de baja el equipo'),

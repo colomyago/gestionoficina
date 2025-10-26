@@ -51,15 +51,15 @@ class SolicitudPrestamoResource extends Resource
         return $schema
             ->components([
                 Select::make('user_id')
-                    ->label('Usuario')
+                    ->label(__('User'))
                     ->relationship('user', 'name')
                     ->searchable()
                     ->required()
                     ->visible(fn () => Auth::user()->isAdmin())
-                    ->helperText('Selecciona el usuario que solicita el equipo'),
+                    ->helperText(__('Select the user requesting the device')),
 
                 Select::make('equipment_id')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->options(function () {
                         return Equipment::where('status', 'disponible')
                             ->get()
@@ -69,14 +69,14 @@ class SolicitudPrestamoResource extends Resource
                     })
                     ->searchable()
                     ->required()
-                    ->helperText('Solo se muestran equipos disponibles'),
+                    ->helperText(__('Only available devices are shown')),
 
                 Textarea::make('motivo')
-                    ->label('Motivo de la solicitud')
+                    ->label(__('Request reason'))
                     ->required()
                     ->rows(3)
                     ->maxLength(500)
-                    ->helperText('Explica brevemente por qué necesitas este equipo'),
+                    ->helperText(__('Briefly explain why you need this device')),
             ]);
     }
 
@@ -92,22 +92,22 @@ class SolicitudPrestamoResource extends Resource
             })
             ->columns([
                 TextColumn::make('user.name')
-                    ->label('Solicitante')
+                    ->label(__('Applicant'))
                     ->searchable()
                     ->sortable()
                     ->visible(fn () => Auth::user()->isAdmin()),
 
                 TextColumn::make('equipment.name')
-                    ->label('Equipo')
+                    ->label(__('Device'))
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('equipment.codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->searchable(),
 
                 BadgeColumn::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->colors([
                         'warning' => 'pendiente',
                         'danger' => 'rechazado',
@@ -115,53 +115,53 @@ class SolicitudPrestamoResource extends Resource
                         'secondary' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pendiente' => 'Pendiente',
-                        'rechazado' => 'Rechazado',
-                        'activo' => 'Activo',
-                        'devuelto' => 'Devuelto',
+                        'pendiente' => __('Pending'),
+                        'rechazado' => __('Rejected'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
                         default => $state,
                     }),
 
                 TextColumn::make('fecha_solicitud')
-                    ->label('Fecha Solicitud')
+                    ->label(__('Request Date'))
                     ->date('d/m/Y')
                     ->sortable(),
 
                 TextColumn::make('fecha_prestamo')
-                    ->label('Fecha Préstamo')
+                    ->label(__('Loan Date'))
                     ->dateTime('d/m/Y H:i')
                     ->placeholder('N/A')
-                    ->tooltip('Fecha y hora de aprobación'),
+                    ->tooltip(__('Approval date and time')),
 
                 TextColumn::make('fecha_devolucion')
-                    ->label('Devolución Estimada')
+                    ->label(__('Estimated Return'))
                     ->date('d/m/Y'),
 
                 TextColumn::make('fecha_devolucion_real')
-                    ->label('Devolución Real')
+                    ->label(__('Actual Return'))
                     ->date('d/m/Y')
-                    ->placeholder('Pendiente')
-                    ->tooltip('Fecha en que se devolvió realmente el equipo'),
+                    ->placeholder(__('Pending'))
+                    ->tooltip(__('Date the device was actually returned')),
 
                 TextColumn::make('motivo')
-                    ->label('Motivo')
+                    ->label(__('Reason'))
                     ->limit(50)
                     ->wrap(),
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'rechazado' => 'Rechazado',
-                        'activo' => 'Activo',
-                        'devuelto' => 'Devuelto',
+                        'pendiente' => __('Pending'),
+                        'rechazado' => __('Rejected'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
                     ]),
             ])
             ->recordActions([
                 ViewAction::make(),
                 Action::make('devolver')
-                    ->label('Devolver')
+                    ->label(__('Return'))
                     ->icon('heroicon-o-arrow-uturn-left')
                     ->color('success')
                     ->visible(fn (Loan $record): bool => $record->status === 'activo')
@@ -178,9 +178,9 @@ class SolicitudPrestamoResource extends Resource
                         ]);
                         
                         Notification::make()
-                            ->title('Equipo devuelto exitosamente')
+                            ->title(__('Device returned successfully'))
                             ->success()
-                            ->body('El equipo ha sido marcado como disponible.')
+                            ->body(__('The device has been marked as available.'))
                             ->send();
                     }),
                 

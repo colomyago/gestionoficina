@@ -15,28 +15,28 @@ class UserForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->label('Nombre')
+                    ->label(__('Name'))
                     ->required()
                     ->maxLength(255),
                     
                 TextInput::make('email')
-                    ->label('Correo Electrónico')
+                    ->label(__('Email'))
                     ->email()
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                     
                 Select::make('role_id')
-                    ->label('Rol')
+                    ->label(__('Role'))
                     ->relationship('role', 'name')
                     ->required(),
 
                 DateTimePicker::make('email_verified_at')
-                    ->label('Email Verificado')
+                    ->label(__('Email verified at'))
                     ->nullable(),
                     
                 TextInput::make('password')
-                    ->label('Contraseña')
+                    ->label(__('Password'))
                     ->password()
                     ->required(fn (string $context): bool => $context === 'create')
                     ->dehydrated(fn ($state) => filled($state))

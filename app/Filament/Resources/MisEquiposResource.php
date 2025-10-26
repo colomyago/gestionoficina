@@ -110,42 +110,42 @@ class MisEquiposResource extends Resource
             })
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('codigo')
-                    ->label('Código')
+                    ->label(__('Code'))
                     ->searchable()
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('categoria')
-                    ->label('Categoría')
+                    ->label(__('Category'))
                     ->searchable()
                     ->sortable(),
 
                 BadgeColumn::make('status')
-                    ->label('Estado')
+                    ->label(__('Status'))
                     ->colors([
                         'success' => 'prestado',
                         'warning' => 'mantenimiento',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'prestado' => 'En Uso',
-                        'mantenimiento' => 'En Mantenimiento',
+                        'prestado' => __('In Use'),
+                        'mantenimiento' => __('In Maintenance'),
                         default => $state,
                     }),
 
                 TextColumn::make('activeLoan.fecha_prestamo')
-                    ->label('Desde')
+                    ->label(__('Since'))
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->placeholder('-'),
 
                 TextColumn::make('activeLoan.fecha_devolucion')
-                    ->label('Devolución Estimada')
+                    ->label(__('Estimated Return'))
                     ->date('d/m/Y')
                     ->sortable()
                     ->color(fn ($record) => 
@@ -160,7 +160,7 @@ class MisEquiposResource extends Resource
                     ),
 
                 TextColumn::make('description')
-                    ->label('Descripción')
+                    ->label(__('Description'))
                     ->limit(50)
                     ->wrap()
                     ->toggleable(),
@@ -174,16 +174,16 @@ class MisEquiposResource extends Resource
 
                     // ACCIÓN: Devolver equipo (solo si está prestado)
                     Action::make('devolver')
-                        ->label('Devolver Equipo')
+                        ->label(__('Return Device'))
                         ->icon('heroicon-o-arrow-uturn-left')
                         ->color('success')
                         ->visible(fn ($record): bool => $record->status === 'prestado')
                         ->requiresConfirmation()
-                        ->modalHeading('¿Devolver este equipo?')
+                        ->modalHeading(__('Return this device?'))
                         ->modalDescription(fn ($record) => 
-                            'Estás a punto de devolver: ' . $record->name . ' (' . $record->codigo . ')'
+                            __('You are about to return') . ': ' . $record->name . ' (' . $record->codigo . ')'
                         )
-                        ->modalSubmitActionLabel('Sí, devolver')
+                        ->modalSubmitActionLabel(__('Yes, return'))
                         ->action(function ($record) {
                             // Buscar el préstamo activo
                             $activeLoan = Loan::where('equipment_id', $record->id)
@@ -193,9 +193,9 @@ class MisEquiposResource extends Resource
 
                             if (!$activeLoan) {
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('No se encontró un préstamo activo para este equipo.')
+                                    ->body(__('No active loan found for this device.'))
                                     ->send();
                                 return;
                             }
@@ -213,26 +213,26 @@ class MisEquiposResource extends Resource
                             ]);
 
                             Notification::make()
-                                ->title('Equipo devuelto')
+                                ->title(__('Device returned'))
                                 ->success()
-                                ->body('El equipo ha sido marcado como disponible.')
+                                ->body(__('The device has been marked as available.'))
                                 ->send();
                         }),
 
                     // ACCIÓN: Reportar problema (solo si está prestado, no en mantenimiento)
                     Action::make('reportar_problema')
-                        ->label('Reportar Problema')
+                        ->label(__('Report Problem'))
                         ->icon('heroicon-o-exclamation-triangle')
                         ->color('warning')
                         ->visible(fn ($record): bool => $record->status === 'prestado')
                         ->form([
                             Textarea::make('descripcion_problema')
-                                ->label('Descripción del problema')
+                                ->label(__('Problem description'))
                                 ->required()
                                 ->rows(4)
                                 ->maxLength(1000)
-                                ->helperText('Describe detalladamente el problema que tiene el equipo')
-                                ->placeholder('Ejemplo: La pantalla no enciende, el teclado no responde, etc.'),
+                                ->helperText(__('Describe in detail the problem with the device'))
+                                ->placeholder(__('Example: The screen does not turn on, the keyboard does not respond, etc.')),
                         ])
                         ->action(function ($record, array $data) {
                             // Buscar el préstamo activo
@@ -268,15 +268,15 @@ class MisEquiposResource extends Resource
                             ]);
 
                             Notification::make()
-                                ->title('Problema reportado')
+                                ->title(__('Problem reported'))
                                 ->success()
-                                ->body('El equipo ha sido enviado a mantenimiento. Gracias por reportar el problema.')
+                                ->body(__('The device has been sent to maintenance. Thank you for reporting the problem.'))
                                 ->send();
                         }),
                 ])
             ])
-            ->emptyStateHeading('No tienes equipos asignados')
-            ->emptyStateDescription('Cuando se te asigne un equipo, aparecerá aquí. Los equipos se mostrarán tanto si están en tu poder como si están en mantenimiento.')
+            ->emptyStateHeading(__('You have no assigned devices'))
+            ->emptyStateDescription(__('When a device is assigned to you, it will appear here. Devices will be shown whether they are in your possession or in maintenance.'))
             ->emptyStateIcon('heroicon-o-computer-desktop')
             ->defaultSort('created_at', 'desc');
     }

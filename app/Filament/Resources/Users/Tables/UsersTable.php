@@ -24,16 +24,16 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label(__('Name'))
                     ->searchable()
                     ->sortable(),
                 
                 TextColumn::make('email')
-                    ->label('Email')
+                    ->label(__('Email')) 
                     ->searchable(),
                 
                 TextColumn::make('role.name')
-                    ->label('Rol')
+                    ->label(__('Role'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Administrador' => 'danger',
@@ -43,24 +43,26 @@ class UsersTable
                     }),
                 
                 TextColumn::make('activeLoans')
-                    ->label('Equipos Activos')
+                    ->label(__('Active loans'))
                     ->counts('activeLoans')
                     ->badge()
                     ->color('primary')
-                    ->tooltip('Cantidad de equipos prestados actualmente'),
+                    ->tooltip(__('Number of devices currently on loan')),
                 
                 TextColumn::make('email_verified_at')
-                    ->label('Email verificado en')
+                    ->label(__('Email verified at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 TextColumn::make('created_at')
+                    ->label(__('Created at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 TextColumn::make('updated_at')
+                    ->label(__('Updated at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -73,7 +75,7 @@ class UsersTable
                 EditAction::make(),
                 
                 Action::make('asignar_equipo')
-                    ->label('Asignar Equipo')
+                    ->label(__('Assign Device'))
                     ->icon('heroicon-o-computer-desktop')
                     ->color('primary')
                     ->visible(fn ($record): bool => 
@@ -82,7 +84,7 @@ class UsersTable
                     )
                     ->form([
                         Select::make('equipment_id')
-                            ->label('Equipo')
+                            ->label(__('Device'))
                             ->options(Equipment::where('status', 'disponible')
                                 ->get()
                                 ->mapWithKeys(fn ($equipment) => [
@@ -90,19 +92,19 @@ class UsersTable
                                 ]))
                             ->searchable()
                             ->required()
-                            ->helperText('Solo se muestran equipos disponibles'),
+                            ->helperText(__('Only available devices are shown')),
                         
                         DatePicker::make('fecha_devolucion')
-                            ->label('Fecha Estimada de Devolución')
+                            ->label(__('Estimated return date'))
                             ->minDate(now()->addDay())
                             ->required()
                             ->default(now()->addWeek())
-                            ->helperText('¿Cuándo debe devolver el equipo?'),
+                            ->helperText(__('When should the device be returned?')),
                         
                         Textarea::make('notas')
-                            ->label('Notas')
+                            ->label(__('Notes'))
                             ->rows(2)
-                            ->placeholder('Motivo de la asignación, condiciones especiales, etc.')
+                            ->placeholder(__('Assignment reason, special conditions, etc.'))
                             ->maxLength(500),
                     ])
                     ->action(function ($record, array $data) {
@@ -111,9 +113,9 @@ class UsersTable
                         // Verificar disponibilidad
                         if ($equipment->status !== 'disponible') {
                             Notification::make()
-                                ->title('Equipo no disponible')
+                                ->title(__('Device not available'))
                                 ->danger()
-                                ->body('El equipo seleccionado ya no está disponible.')
+                                ->body(__('The selected device is no longer available.'))
                                 ->send();
                             return;
                         }
@@ -127,7 +129,7 @@ class UsersTable
                             'fecha_solicitud' => now(),
                             'fecha_prestamo' => now(),
                             'fecha_devolucion' => $data['fecha_devolucion'],
-                            'motivo' => 'Asignación directa por administrador',
+                            'motivo' => __('Direct assignment by administrator'),
                             'notas' => $data['notas'] ?? null,
                         ]);
 
@@ -138,9 +140,9 @@ class UsersTable
                         ]);
 
                         Notification::make()
-                            ->title('Equipo asignado exitosamente')
+                            ->title(__('Device assigned successfully'))
                             ->success()
-                            ->body($equipment->name . ' ha sido asignado a ' . $record->name)
+                            ->body($equipment->name . ' ' . __('has been assigned to') . ' ' . $record->name)
                             ->send();
                     }),
             ])
