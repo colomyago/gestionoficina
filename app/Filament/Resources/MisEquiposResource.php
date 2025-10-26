@@ -29,11 +29,7 @@ class MisEquiposResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedComputerDesktop;
 
-    protected static ?string $navigationLabel = 'Mis Equipos';
-
-    protected static ?string $modelLabel = 'Mi Equipo';
-
-    protected static ?string $pluralModelLabel = 'Mis Equipos';
+    protected static ?string $navigationLabel = null;
 
     protected static ?int $navigationSort = 0;
 

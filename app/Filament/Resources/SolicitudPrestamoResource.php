@@ -31,11 +31,7 @@ class SolicitudPrestamoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
-    protected static ?string $navigationLabel = 'Mis Solicitudes';
-
-    protected static ?string $modelLabel = 'Solicitud de Préstamo';
-
-    protected static ?string $pluralModelLabel = 'Mis Solicitudes';
+    protected static ?string $navigationLabel = null;
 
     protected static ?int $navigationSort = 1;
 

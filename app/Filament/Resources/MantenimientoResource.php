@@ -29,11 +29,9 @@ class MantenimientoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
 
-    protected static ?string $navigationLabel = 'Mantenimiento';
+    protected static ?string $navigationLabel = null;
 
     protected static ?string $modelLabel = 'Solicitud de Mantenimiento';
-
-    protected static ?string $pluralModelLabel = 'Mantenimiento';
 
     protected static ?int $navigationSort = 3;
 

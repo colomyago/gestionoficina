@@ -26,11 +26,7 @@ class EquipmentResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedComputerDesktop;
 
-    protected static ?string $navigationLabel = 'Equipos';
-
-    protected static ?string $modelLabel = 'Equipo';
-
-    protected static ?string $pluralModelLabel = 'Equipos';
+    protected static ?string $navigationLabel = null;
 
     public static function form(Schema $schema): Schema
     {
