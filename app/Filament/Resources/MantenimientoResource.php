@@ -113,15 +113,10 @@ class MantenimientoResource extends Resource
                 TextColumn::make('equipment.name')
                     ->label(__('Device')) // Equipo
                     ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('equipment.codigo')
-                    ->label(__('Code')) // Código
-                    ->searchable(),
-
-                TextColumn::make('requestedBy.name')
-                    ->label(__('Requested by'))//Solicitado por
-                    ->searchable(),
+                    ->sortable()
+                    ->description(fn (MaintenanceRequest $record): string => 
+                        $record->equipment->codigo ?? ''
+                    ),
 
                 BadgeColumn::make('status')
                         ->label(__('Status'))
@@ -139,33 +134,24 @@ class MantenimientoResource extends Resource
                         default => $state,
                     }),
 
-                BadgeColumn::make('resultado')
-                     ->label(__('Result'))
-                    ->colors([
-                        'secondary' => 'pendiente',
-                        'success' => 'reparado',
-                        'danger' => 'dado_de_baja',
-                    ])
-                      ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pendiente' => __('Pending'),
-                        'reparado' => __('Repaired'),
-                        'dado_de_baja' => __('Decommissioned'),
-                        default => $state,
-                    }),
+                TextColumn::make('descripcion_problema')
+                    ->label(__('Problem')) // Problema
+                    ->limit(50)
+                    ->tooltip(function (MaintenanceRequest $record): string {
+                        return $record->descripcion_problema ?? '';
+                    })
+                    ->searchable()
+                    ->wrap(),
 
                 TextColumn::make('assignedTo.name')
                     ->label(__('Assigned to')) // Asignado a
-                    ->placeholder('Sin asignar'),
+                    ->placeholder('Sin asignar')
+                    ->sortable(),
 
                 TextColumn::make('fecha_solicitud')
                     ->label(__('Request Date')) // Fecha de Solicitud
                     ->dateTime('d/m/Y')
                     ->sortable(),
-
-                TextColumn::make('descripcion_problema')
-                    ->label(__('Problem')) // Problema
-                    ->limit(30)
-                    ->wrap(),
             ])
             ->filters([
                  SelectFilter::make('status')

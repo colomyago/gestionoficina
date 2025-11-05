@@ -96,11 +96,10 @@ class SolicitudPrestamoResource extends Resource
                 TextColumn::make('equipment.name')
                     ->label(__('Device'))
                     ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('equipment.codigo')
-                    ->label(__('Code'))
-                    ->searchable(),
+                    ->sortable()
+                    ->description(fn (Loan $record): string => 
+                        $record->equipment->codigo ?? ''
+                    ),
 
                 BadgeColumn::make('status')
                     ->label(__('Status'))
@@ -137,11 +136,15 @@ class SolicitudPrestamoResource extends Resource
                     ->label(__('Actual Return'))
                     ->date('d/m/Y')
                     ->placeholder(__('Pending'))
-                    ->tooltip(__('Date the device was actually returned')),
+                    ->visible(fn (?Loan $record): bool => $record && $record->status === 'devuelto'),
 
                 TextColumn::make('motivo')
                     ->label(__('Reason'))
-                    ->limit(50)
+                    ->limit(40)
+                    ->tooltip(function (?Loan $record): ?string {
+                        return $record?->motivo;
+                    })
+                    ->searchable()
                     ->wrap(),
             ])
             ->filters([
