@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -30,6 +31,11 @@ class UserResource extends Resource
     protected static ?string $modelLabel = 'Usuario';
 
     protected static ?string $pluralModelLabel = 'Usuarios';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return Auth::user()?->role?->code === 'admin';
+    }
 
     public static function form(Schema $schema): Schema
     {
