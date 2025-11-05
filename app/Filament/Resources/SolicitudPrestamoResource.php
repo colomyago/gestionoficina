@@ -35,6 +35,30 @@ class SolicitudPrestamoResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $user = Auth::user();
+        
+        // Si es trabajador, muestra solo sus pendientes
+        if ($user && $user->isTrabajador()) {
+            return (string) Loan::pending()
+                ->where('user_id', $user->id)
+                ->count();
+        }
+        
+        // Si es admin, muestra todos los pendientes
+        if ($user && $user->isAdmin()) {
+            return (string) Loan::pending()->count();
+        }
+        
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     // Visible para trabajadores y admin
     public static function canViewAny(): bool
     {
