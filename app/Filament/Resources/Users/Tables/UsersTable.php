@@ -71,7 +71,6 @@ class UsersTable
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
                 
                 Action::make('asignar_equipo')

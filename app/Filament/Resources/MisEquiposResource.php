@@ -166,7 +166,6 @@ class MisEquiposResource extends Resource
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make(),
 
                     // ACCIÓN: Devolver equipo (solo si está prestado)
                     Action::make('devolver')

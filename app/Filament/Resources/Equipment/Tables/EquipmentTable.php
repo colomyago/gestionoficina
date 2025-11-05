@@ -68,7 +68,6 @@ class EquipmentTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make(),
                     EditAction::make()
                         ->visible(fn (): bool => Auth::user()->isAdmin()),
                     DeleteAction::make()

@@ -182,7 +182,6 @@ class SolicitudPrestamoResource extends Resource
                     ]),
             ])
             ->recordActions([
-                ViewAction::make(),
                 Action::make('devolver')
                     ->label(__('Return'))
                     ->icon('heroicon-o-arrow-uturn-left')

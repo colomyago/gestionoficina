@@ -166,7 +166,6 @@ class GestionSolicitudesResource extends Resource
                     ->default('pendiente'),
             ])
             ->recordActions([
-                ViewAction::make(),
                 
                 Action::make('aprobar')
                     ->label(__('Approve'))// Aprobar

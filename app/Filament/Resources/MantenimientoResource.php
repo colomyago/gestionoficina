@@ -173,7 +173,6 @@ class MantenimientoResource extends Resource
                     ]),
             ])
             ->recordActions([
-                ViewAction::make(),
 
                 Action::make('tomar')
                     ->label(__('Take')) // Tomar
