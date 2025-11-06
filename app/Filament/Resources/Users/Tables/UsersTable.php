@@ -9,6 +9,8 @@ use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Actions\ActionGroup;
+use STS\FilamentImpersonate\Actions\Impersonate;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
@@ -71,8 +73,12 @@ class UsersTable
                 //
             ])
             ->recordActions([
+            ActionGroup::make([    
                 EditAction::make(),
-                
+                Impersonate::make()
+                ->color('primary')
+                ->redirectTo('/admin')
+                ->visible(fn ($record): bool => Auth::user()->isAdmin() && $record->id !== Auth::id()),
                 Action::make('asignar_equipo')
                     ->label(__('Assign Device'))
                     ->icon('heroicon-o-computer-desktop')
@@ -144,6 +150,7 @@ class UsersTable
                             ->body($equipment->name . ' ' . __('has been assigned to') . ' ' . $record->name)
                             ->send();
                     }),
+                ])
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
