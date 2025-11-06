@@ -580,4 +580,56 @@ El sistema proporciona las siguientes funciones principales:
 - MySQL 8.0 Documentation: https://dev.mysql.com/doc/
 - IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications
 
+### 4.5 Matriz de Trazabilidad de Requisitos
+
+Esta matriz establece la relación entre los requisitos especificados y su implementación en el sistema.
+
+#### Requisitos Funcionales
+
+| ID | Requisito | Implementación | Archivo/Componente | Estado |
+|----|-----------|----------------|-------------------|--------|
+| RF-01 | Autenticación de usuarios | Laravel Authentication + Filament | `config/auth.php`, Filament Auth | ✅ Implementado |
+| RF-02 | Gestión de roles y permisos | Sistema de Roles + Políticas | `app/Models/Role.php`, `app/Policies/*` | ✅ Implementado |
+| RF-03 | CRUD de equipos | Filament Resource | `app/Filament/Resources/EquipmentResource.php` | ✅ Implementado |
+| RF-04 | Control de estados de equipos | Modelo + Migraciones | `app/Models/Equipment.php`, `database/migrations/*equipment*` | ✅ Implementado |
+| RF-05 | Solicitud de préstamo (Trabajador) | Filament Resource | `app/Filament/Resources/SolicitudPrestamoResource.php` | ✅ Implementado |
+| RF-06 | Aprobación de préstamos (Admin) | Filament Resource + Actions | `app/Filament/Resources/GestionSolicitudesResource.php` | ✅ Implementado |
+| RF-07 | Devolución de equipos | Lógica en Resource + Actions | `app/Filament/Resources/MisEquiposResource.php` | ✅ Implementado |
+| RF-08 | Reporte de problemas | Formulario + Modelo | `MaintenanceRequest` model + Resource | ✅ Implementado |
+| RF-09 | Gestión de mantenimiento | Filament Resource | `app/Filament/Resources/MantenimientoResource.php` | ✅ Implementado |
+| RF-10 | Reparación de equipos | Estados + Workflow | `MaintenanceRequest` + Actions | ✅ Implementado |
+| RF-11 | Baja de equipos | Estado + Transición | Equipment model status transition | ✅ Implementado |
+| RF-12 | Historial de préstamos | Relaciones + Timestamps | `loans` table con timestamps | ✅ Implementado |
+| RF-13 | Dashboard personalizado por rol | Widgets condicionales | `app/Filament/Widgets/*` | ✅ Implementado |
+| RF-14 | Estadísticas en tiempo real | Widgets con queries | `StatsOverview`, `EquipmentChart`, etc. | ✅ Implementado |
+| RF-15 | Búsqueda y filtrado | Filament Tables | Todos los Resources con `searchable()` | ✅ Implementado |
+| RF-16 | Gestión de usuarios (Admin) | Filament Resource | `app/Filament/Resources/Users/UserResource.php` | ✅ Implementado |
+| RF-17 | Asignación de técnicos | Select + Validación | `MantenimientoResource` con filtros | ✅ Implementado |
+| RF-18 | Notificaciones de estado | Filament Notifications | Notifications en Actions | ✅ Implementado |
+
+#### Requisitos No Funcionales
+
+| ID | Requisito | Implementación | Validación | Estado |
+|----|-----------|----------------|-----------|--------|
+| RNF-01 | Seguridad - Autenticación | Laravel Sanctum + Sessions | Login funcional | ✅ Implementado |
+| RNF-02 | Seguridad - Autorización | Políticas Laravel | `app/Policies/*` | ✅ Implementado |
+| RNF-03 | Seguridad - Encriptación | Bcrypt passwords | `User` model | ✅ Implementado |
+| RNF-04 | Usabilidad - Interfaz intuitiva | Filament UI/UX | Interface Filament | ✅ Implementado |
+| RNF-05 | Usabilidad - Responsive | Tailwind CSS | Layout responsivo | ✅ Implementado |
+| RNF-06 | Compatibilidad - Navegadores | HTML5 + CSS3 moderno | Chrome, Firefox, Edge | ✅ Implementado |
+| RNF-07 | Rendimiento - Queries optimizadas | Eloquent + Índices | `database/migrations/*` | ✅ Implementado |
+| RNF-08 | Rendimiento - Caché | Laravel Cache | `config/cache.php` | ✅ Implementado |
+| RNF-09 | Mantenibilidad - Código limpio | PSR-12 | Código organizado | ✅ Implementado |
+| RNF-10 | Mantenibilidad - Documentación | Markdown docs | `docs/*` | ✅ Implementado |
+| RNF-11 | Portabilidad - Docker | Docker Compose + Sail | `docker-compose.yml` | ✅ Implementado |
+| RNF-12 | Escalabilidad - Arquitectura | MVC + Resources | Estructura Laravel | ✅ Implementado |
+
+#### Cobertura de Requisitos
+
+| Categoría | Total | Implementados | Porcentaje |
+|-----------|-------|---------------|------------|
+| Requisitos Funcionales | 18 | 18 | 100% |
+| Requisitos No Funcionales | 12 | 12 | 100% |
+| **TOTAL** | **30** | **30** | **100%** |
+
 ---
