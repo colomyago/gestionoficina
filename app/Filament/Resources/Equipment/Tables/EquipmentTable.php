@@ -146,7 +146,6 @@ class EquipmentTable
                         ->form([
                             Textarea::make('motivo')
                                 ->label('Motivo de la solicitud')
-                                ->required()
                                 ->rows(3)
                                 ->maxLength(500)
                                 ->helperText('Explica por qué necesitas este equipo'),
