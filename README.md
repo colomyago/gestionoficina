@@ -74,7 +74,6 @@ docker run --rm \
 
 - **Web:** http://localhost
 - **Panel Admin:** http://localhost/admin
-- **Mailpit:** http://localhost:8025
 
 ### Usuarios de Prueba
 
@@ -116,7 +115,6 @@ Toda la documentación está disponible en la carpeta `docs/`:
 
 **Servicios:**
 - Google Gemini API
-- Mailpit (desarrollo)
 
 ### Estructura del Proyecto
 

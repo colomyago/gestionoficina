@@ -82,7 +82,6 @@ Esto va a tardar unos minutos la primera vez.
 Esto levanta:
 - PHP 8.4
 - MySQL 8.0
-- Mailpit (para emails de prueba)
 
 Esperá unos 30 segundos la primera vez mientras descarga las imágenes.
 
@@ -151,7 +150,6 @@ Abrí tu navegador:
 
 - **Aplicación:** http://localhost
 - **Panel Admin:** http://localhost/admin
-- **Mailpit (emails):** http://localhost:8025
 
 ---
 

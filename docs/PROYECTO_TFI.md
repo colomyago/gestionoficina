@@ -174,7 +174,6 @@ Utilizar tecnologías conocidas y probadas:
 
 #### Servicios Adicionales:
 - **AI Integration:** Google Gemini API
-- **Mail Testing:** Mailpit
 - **Package Manager:** Composer, NPM
 
 ### 4.2 Estructura de Directorios

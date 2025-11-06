@@ -266,20 +266,7 @@ sail artisan make:job ProcessEquipment
 
 ---
 
-## 📧 Mail / Mailpit
-
-```bash
-# Ver emails en desarrollo
-# Abrir en navegador: http://localhost:8025
-
-# Enviar email de prueba
-sail artisan tinker
->>> Mail::raw('Test', function($msg) { $msg->to('test@test.com')->subject('Test'); });
-```
-
----
-
-## 🔍 Debugging
+##  Debugging
 
 ```bash
 # Ver configuración actual
