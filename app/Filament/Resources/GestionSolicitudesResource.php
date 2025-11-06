@@ -15,6 +15,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
@@ -166,129 +167,131 @@ class GestionSolicitudesResource extends Resource
                     ->default('pendiente'),
             ])
             ->recordActions([
-                
-                Action::make('aprobar')
-                    ->label(__('Approve'))// Aprobar
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
-                    ->requiresConfirmation()
-                    ->fillForm(fn (Loan $record): array => [
-                        'motivo_original' => $record->motivo,
-                    ])
-                    ->form([
-                        Placeholder::make('motivo_original')
-                            ->label(__('Solicitation reason')) //Motivo de la Solicitud
-                            ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
-                            ->columnSpanFull(),
-                        
-                        Placeholder::make('info_fecha_prestamo')
-                            ->label(__('Date and time of loan')) //Fecha y Hora de Préstamo
-                            ->content('Se registrará automáticamente al aprobar')
-                            ->helperText('El sistema registrará la fecha y hora exacta de aprobación'),
-                        
-                        DatePicker::make('fecha_devolucion')
-                            ->label(__('Estimated return date')) //Fecha Estimada de Devolución
-                            ->minDate(now()->addDay())
-                            ->required()
-                            ->helperText('¿Cuándo debe devolver el equipo?')
-                            ->default(now()->addWeek()),
-                        
-                        Textarea::make('notas')
-                            ->label(__('Admin notes')) //Notas del admin
-                            ->rows(2)
-                            ->placeholder('Condiciones especiales, observaciones, etc.')
-                            ->columnSpanFull(),
-                    ])
-                    ->action(function (Loan $record, array $data) {
-                        // Validar que el equipo esté disponible
-                        $record->load('equipment');
-                        
-                        if ($record->equipment->status !== 'disponible') {
+
+            ActionGroup::make([
+                    Action::make('aprobar')
+                        ->label(__('Approve'))// Aprobar
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
+                        ->requiresConfirmation()
+                        ->fillForm(fn (Loan $record): array => [
+                            'motivo_original' => $record->motivo,
+                        ])
+                        ->form([
+                            Placeholder::make('motivo_original')
+                                ->label(__('Solicitation reason')) //Motivo de la Solicitud
+                                ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                                ->columnSpanFull(),
+                            
+                            Placeholder::make('info_fecha_prestamo')
+                                ->label(__('Date and time of loan')) //Fecha y Hora de Préstamo
+                                ->content('Se registrará automáticamente al aprobar')
+                                ->helperText('El sistema registrará la fecha y hora exacta de aprobación'),
+                            
+                            DatePicker::make('fecha_devolucion')
+                                ->label(__('Estimated return date')) //Fecha Estimada de Devolución
+                                ->minDate(now()->addDay())
+                                ->required()
+                                ->helperText('¿Cuándo debe devolver el equipo?')
+                                ->default(now()->addWeek()),
+                            
+                            Textarea::make('notas')
+                                ->label(__('Admin notes')) //Notas del admin
+                                ->rows(2)
+                                ->placeholder('Condiciones especiales, observaciones, etc.')
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (Loan $record, array $data) {
+                            // Validar que el equipo esté disponible
+                            $record->load('equipment');
+                            
+                            if ($record->equipment->status !== 'disponible') {
+                                Notification::make()
+                                    ->title('Equipo no disponible')
+                                    ->danger()
+                                    ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
+                                    ->send();
+                                return;
+                            }
+
+                            // Verificar que no haya otro préstamo activo para este equipo
+                            $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
+                                ->where('id', '!=', $record->id)
+                                ->where('status', 'activo')
+                                ->first();
+
+                            if ($otherActiveLoan) {
+                                Notification::make()
+                                    ->title('Equipo ya prestado')
+                                    ->danger()
+                                    ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
+                                    ->send();
+                                return;
+                            }
+
+                            // Fecha de préstamo automática con fecha y hora actual
+                            $fechaPrestamoAhora = now();
+
+                            $record->update([
+                                'status' => 'activo',
+                                'fecha_prestamo' => $fechaPrestamoAhora,
+                                'fecha_devolucion' => $data['fecha_devolucion'],
+                                'notas' => $data['notas'] ?? null,
+                                'assigned_by' => Auth::id(),
+                            ]);
+
+                            // Actualizar el equipo
+                            $record->equipment->update([
+                                'status' => 'prestado',
+                                'user_id' => $record->user_id,
+                            ]);
+
                             Notification::make()
-                                ->title('Equipo no disponible')
-                                ->danger()
-                                ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
+                                ->title('Solicitud aprobada')
+                                ->success()
+                                ->body('El equipo ha sido asignado a ' . $record->user->name . ' el ' . $fechaPrestamoAhora->format('d/m/Y H:i'))
                                 ->send();
-                            return;
-                        }
+                        }),
 
-                        // Verificar que no haya otro préstamo activo para este equipo
-                        $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
-                            ->where('id', '!=', $record->id)
-                            ->where('status', 'activo')
-                            ->first();
+                    Action::make('rechazar')
+                        ->label(__('Reject')) //Rechazar
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
+                        ->requiresConfirmation()
+                        ->modalDescription(fn (Loan $record): string => 
+                            'Vas a rechazar la solicitud de ' . $record->user->name . 
+                            ' para el equipo ' . $record->equipment->name)
+                        ->form([
+                            Placeholder::make('motivo_original')
+                                ->label(__('Solicitation reason')) //Motivo de la Solicitud
+                                ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                                ->columnSpanFull(),
+                            
+                            Textarea::make('notas')
+                                ->label(__('Reason')) //Motivo del Rechazo
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Explica por qué se rechaza esta solicitud')
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (Loan $record, array $data) {
+                            $record->update([
+                                'status' => 'rechazado',
+                                'notas' => $data['notas'],
+                            ]);
 
-                        if ($otherActiveLoan) {
                             Notification::make()
-                                ->title('Equipo ya prestado')
+                                ->title('Solicitud rechazada')
                                 ->danger()
-                                ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
+                                ->body('Se ha notificado al usuario sobre el rechazo.')
                                 ->send();
-                            return;
-                        }
+                        }),
 
-                        // Fecha de préstamo automática con fecha y hora actual
-                        $fechaPrestamoAhora = now();
-
-                        $record->update([
-                            'status' => 'activo',
-                            'fecha_prestamo' => $fechaPrestamoAhora,
-                            'fecha_devolucion' => $data['fecha_devolucion'],
-                            'notas' => $data['notas'] ?? null,
-                            'assigned_by' => Auth::id(),
-                        ]);
-
-                        // Actualizar el equipo
-                        $record->equipment->update([
-                            'status' => 'prestado',
-                            'user_id' => $record->user_id,
-                        ]);
-
-                        Notification::make()
-                            ->title('Solicitud aprobada')
-                            ->success()
-                            ->body('El equipo ha sido asignado a ' . $record->user->name . ' el ' . $fechaPrestamoAhora->format('d/m/Y H:i'))
-                            ->send();
-                    }),
-
-                Action::make('rechazar')
-                    ->label(__('Reject')) //Rechazar
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
-                    ->requiresConfirmation()
-                    ->modalDescription(fn (Loan $record): string => 
-                        'Vas a rechazar la solicitud de ' . $record->user->name . 
-                        ' para el equipo ' . $record->equipment->name)
-                    ->form([
-                        Placeholder::make('motivo_original')
-                            ->label(__('Solicitation reason')) //Motivo de la Solicitud
-                            ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
-                            ->columnSpanFull(),
-                        
-                        Textarea::make('notas')
-                            ->label(__('Reason')) //Motivo del Rechazo
-                            ->required()
-                            ->rows(3)
-                            ->placeholder('Explica por qué se rechaza esta solicitud')
-                            ->columnSpanFull(),
-                    ])
-                    ->action(function (Loan $record, array $data) {
-                        $record->update([
-                            'status' => 'rechazado',
-                            'notas' => $data['notas'],
-                        ]);
-
-                        Notification::make()
-                            ->title('Solicitud rechazada')
-                            ->danger()
-                            ->body('Se ha notificado al usuario sobre el rechazo.')
-                            ->send();
-                    }),
-
-                EditAction::make()
-                    ->visible(fn (Loan $record): bool => $record->status === 'activo'),
+                    EditAction::make()
+                        ->visible(fn (Loan $record): bool => $record->status === 'activo'),
+                    ]),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

@@ -49,15 +49,8 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $table = UsersTable::configure($table);
-    
-        return $table->actions([
-            ...$table->getActions(), // Mantiene las acciones existentes
-            Impersonate::make()
-            ->redirectTo('/admin')
-
-            ,
-        ]);
+  
+        return UsersTable::configure($table);
     }
 
     public static function getRelations(): array

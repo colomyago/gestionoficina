@@ -14,6 +14,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
@@ -173,98 +174,99 @@ class MantenimientoResource extends Resource
                     ]),
             ])
             ->recordActions([
+                ActionGroup::make([
+                    Action::make('tomar')
+                        ->label(__('Take')) // Tomar
+                        ->icon('heroicon-o-hand-raised')
+                        ->color('info')
+                        ->visible(fn (MaintenanceRequest $record): bool => 
+                            $record->status === 'pendiente' && Auth::user()->isMantenimiento()
+                        )
+                        ->requiresConfirmation()
+                        ->action(function (MaintenanceRequest $record) {
+                            $record->update([
+                                'status' => 'en_proceso',
+                                'assigned_to' => Auth::id(),
+                            ]);
 
-                Action::make('tomar')
-                    ->label(__('Take')) // Tomar
-                    ->icon('heroicon-o-hand-raised')
-                    ->color('info')
-                    ->visible(fn (MaintenanceRequest $record): bool => 
-                        $record->status === 'pendiente' && Auth::user()->isMantenimiento()
-                    )
-                    ->requiresConfirmation()
-                    ->action(function (MaintenanceRequest $record) {
-                        $record->update([
-                            'status' => 'en_proceso',
-                            'assigned_to' => Auth::id(),
-                        ]);
+                            Notification::make()
+                                ->title('Solicitud tomada')
+                                ->success()
+                                ->send();
+                        }),
 
-                        Notification::make()
-                            ->title('Solicitud tomada')
-                            ->success()
-                            ->send();
-                    }),
+                    Action::make('reparar')
+                        ->label(__('Mark as Repaired')) // Marcar como Reparado
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->visible(fn (MaintenanceRequest $record): bool => 
+                            in_array($record->status, ['pendiente', 'en_proceso']) && 
+                            (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
+                        )
+                        ->requiresConfirmation()
+                        ->form([
+                            Textarea::make('solucion')
+                                ->label('Solución Aplicada')
+                                ->required()
+                                ->rows(3),
+                        ])
+                        ->action(function (MaintenanceRequest $record, array $data) {
+                            $record->update([
+                                'status' => 'completado',
+                                'resultado' => 'reparado',
+                                'solucion' => $data['solucion'],
+                                'fecha_completado' => now(),
+                            ]);
 
-                Action::make('reparar')
-                    ->label(__('Mark as Repaired')) // Marcar como Reparado
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->visible(fn (MaintenanceRequest $record): bool => 
-                        in_array($record->status, ['pendiente', 'en_proceso']) && 
-                        (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Textarea::make('solucion')
-                            ->label('Solución Aplicada')
-                            ->required()
-                            ->rows(3),
-                    ])
-                    ->action(function (MaintenanceRequest $record, array $data) {
-                        $record->update([
-                            'status' => 'completado',
-                            'resultado' => 'reparado',
-                            'solucion' => $data['solucion'],
-                            'fecha_completado' => now(),
-                        ]);
+                            // Cambiar el equipo a disponible
+                            $record->equipment->update([
+                                'status' => 'disponible',
+                            ]);
 
-                        // Cambiar el equipo a disponible
-                        $record->equipment->update([
-                            'status' => 'disponible',
-                        ]);
+                            Notification::make()
+                                ->title('Equipo reparado y disponible')
+                                ->success()
+                                ->send();
+                        }),
 
-                        Notification::make()
-                            ->title('Equipo reparado y disponible')
-                            ->success()
-                            ->send();
-                    }),
+                    Action::make('dar_de_baja')
+                        ->label(__('Cancel')) // Dar de Baja
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->visible(fn (MaintenanceRequest $record): bool => 
+                            in_array($record->status, ['pendiente', 'en_proceso']) && 
+                            (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
+                        )
+                        ->requiresConfirmation()
+                        ->form([
+                            Textarea::make('solucion')
+                                ->label(__('Cancel reason')) // Motivo de la Baja
+                                ->required()
+                                ->rows(3)
+                                ->helperText('Explica por qué se da de baja el equipo'),
+                        ])
+                        ->action(function (MaintenanceRequest $record, array $data) {
+                            $record->update([
+                                'status' => 'completado',
+                                'resultado' => 'dado_de_baja',
+                                'solucion' => $data['solucion'],
+                                'fecha_completado' => now(),
+                            ]);
 
-                Action::make('dar_de_baja')
-                    ->label(__('Cancel')) // Dar de Baja
-                    ->icon('heroicon-o-trash')
-                    ->color('danger')
-                    ->visible(fn (MaintenanceRequest $record): bool => 
-                        in_array($record->status, ['pendiente', 'en_proceso']) && 
-                        (Auth::user()->isMantenimiento() || Auth::user()->isAdmin())
-                    )
-                    ->requiresConfirmation()
-                    ->form([
-                        Textarea::make('solucion')
-                            ->label(__('Cancel reason')) // Motivo de la Baja
-                            ->required()
-                            ->rows(3)
-                            ->helperText('Explica por qué se da de baja el equipo'),
-                    ])
-                    ->action(function (MaintenanceRequest $record, array $data) {
-                        $record->update([
-                            'status' => 'completado',
-                            'resultado' => 'dado_de_baja',
-                            'solucion' => $data['solucion'],
-                            'fecha_completado' => now(),
-                        ]);
+                            // Marcar el equipo como dado de baja
+                            $record->equipment->update([
+                                'status' => 'baja',
+                            ]);
 
-                        // Marcar el equipo como dado de baja
-                        $record->equipment->update([
-                            'status' => 'baja',
-                        ]);
+                            Notification::make()
+                                ->title('Equipo dado de baja')
+                                ->warning()
+                                ->send();
+                        }),
 
-                        Notification::make()
-                            ->title('Equipo dado de baja')
-                            ->warning()
-                            ->send();
-                    }),
-
-                EditAction::make()
-                    ->visible(fn (): bool => Auth::user()->isAdmin()),
+                    EditAction::make()
+                        ->visible(fn (): bool => Auth::user()->isAdmin()),
+                ])
             ])
             ->bulkActions([
                 BulkActionGroup::make([
