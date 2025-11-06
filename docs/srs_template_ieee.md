@@ -496,7 +496,7 @@ El sistema proporciona las siguientes funciones principales:
 2. Usuario hace clic en "Nueva Solicitud"
 3. Sistema muestra formulario
 4. Usuario selecciona equipo disponible
-5. Usuario ingresa motivo
+5. Usuario ingresa motivo (opcional)
 6. Usuario envía solicitud
 7. Sistema crea solicitud con estado "pendiente"
 8. Sistema muestra confirmación
