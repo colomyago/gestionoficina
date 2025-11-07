@@ -119,7 +119,7 @@ Desarrollar este proyecto fue un buen desafío. Algunas cosas que nos dimos cuen
 Proyecto desarrollado por:
 - **Yago Colombo** - colomboyago0@gmail.com
 - **Gaston Heinz** - gastonheinz88@gmail.com
-- **Tomas Mattei**
+- **Tomas Mattei** - tomasmattei@hotmail.com
 
 Para la materia Gestión de Desarrollo de Software.
 
