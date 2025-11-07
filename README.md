@@ -89,7 +89,7 @@ docker run --rm \
 
 Toda la documentación está disponible en la carpeta `docs/`:
 
-- 📖 [**Instalación Completa**](docs/INSTALACION.md) - Guía detallada con Sail
+- 📖 [**Instalación Completa**](docs/installing.md) - Guía detallada con Sail
 - � [**SRS - Especificación de Requisitos**](docs/srs-gestionoficina.md) - Requisitos funcionales y no funcionales (IEEE 830)
 - �📘 [**Proyecto TFI**](docs/PROYECTO_TFI.md) - Documentación académica completa
 - 🔐 [**Sistema de Roles**](docs/SISTEMA_ROLES.md) - Roles y permisos
