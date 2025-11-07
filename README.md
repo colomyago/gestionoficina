@@ -111,9 +111,8 @@ Desarrollar este proyecto fue un buen desafío. Algunas cosas que nos dimos cuen
 
 **Para el futuro nos gustaría agregar:**
 - Notificaciones cuando se vence un préstamo
-- Códigos QR en los equipos
+- Consultas con un ChatBot
 - Reportes en PDF
-- Una app móvil
 
 ## Autores
 
