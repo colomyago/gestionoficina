@@ -4,6 +4,74 @@
 
 ---
 
+## Paso 0: Instalar Prerrequisitos
+
+### 🐧 Instalar WSL2 (Windows Subsystem for Linux)
+
+**Método Recomendado - Desde la página de Microsoft:**
+
+**1. Ir a la página oficial:**
+- Andá a: https://learn.microsoft.com/es-es/windows/wsl/install
+- O buscá "WSL Microsoft" en Google
+
+**2. Seguir las instrucciones oficiales:**
+
+Opción más fácil - abrí PowerShell como Administrador y ejecutá:
+
+```powershell
+wsl --install
+```
+
+Esto automáticamente:
+- Habilita WSL
+- Instala WSL2
+- Descarga Ubuntu (distribución por defecto)
+
+**3. Reiniciar Windows** (obligatorio)
+
+**4. Configurar Ubuntu:**
+- Abrí Ubuntu desde el menú inicio
+- Configurá tu usuario y contraseña cuando te lo pida
+
+**Verificar:** Abrí PowerShell y ejecutá `wsl -l -v`. Deberías ver Ubuntu con VERSION 2.
+
+---
+
+### 🐳 Instalar Docker Desktop
+
+**1. Descargar Docker Desktop:**
+
+- Andá a: https://www.docker.com/products/docker-desktop/
+- Descargá "Docker Desktop for Windows"
+
+**2. Instalar Docker Desktop:**
+
+- Ejecutá el instalador descargado
+- Durante la instalación, asegurate de marcar "Use WSL 2 instead of Hyper-V"
+- Reiniciá Windows cuando termine
+
+**3. Configurar Docker con WSL2:**
+
+- Abrí Docker Desktop
+- Andá a Settings (⚙️) → General
+- Verificá que esté marcado "Use the WSL 2 based engine"
+- Andá a Resources → WSL Integration
+- Habilitá "Enable integration with my default WSL distro"
+- Habilitá tu distribución Ubuntu
+
+**4. Probar la instalación:**
+
+Abrí tu terminal Ubuntu (WSL) y ejecutá:
+
+```bash
+docker --version
+docker-compose --version
+```
+
+Deberías ver las versiones instaladas.
+
+---
+
 ## Paso 1: Clonar el Proyecto
 
 Abrí tu terminal WSL y ejecutá:
