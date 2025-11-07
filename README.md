@@ -85,7 +85,7 @@ docker run --rm \
 
 ---
 
-## 📚 Documentación
+## 📚 Documentacion
 
 Toda la documentación está disponible en la carpeta `docs/`:
 
