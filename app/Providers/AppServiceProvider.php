@@ -44,6 +44,13 @@ class AppServiceProvider extends ServiceProvider
         // Forzar HTTPS en producción (Railway, etc.)
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
+            
+            // Forzar cookies seguras
+            config([
+                'session.secure' => true,
+                'session.http_only' => true,
+                'session.same_site' => 'lax',
+            ]);
         }
 
         // Registrar las políticas
