@@ -18,6 +18,8 @@ Esta guía te llevará paso a paso para desplegar tu Sistema de Gestión de Ofic
 Asegúrate que estos archivos nuevos estén en tu proyecto:
 - ✅ `Procfile` 
 - ✅ `railway-deploy.sh`
+- ✅ `nixpacks.toml` (configuración PHP)
+- ✅ `railway.toml` (extensiones PHP requeridas)
 - ✅ `.env.example` (actualizado)
 
 ### 1.2 Commitear y pushear cambios
@@ -30,7 +32,7 @@ cd /home/yago/proyecto/gestionoficina
 git status
 
 # Agregar archivos nuevos
-git add Procfile railway-deploy.sh .env.example
+git add Procfile railway-deploy.sh nixpacks.toml railway.toml .env.example
 
 # Hacer commit
 git commit -m "Preparar proyecto para deployment en Railway"
@@ -244,6 +246,12 @@ Railway no tiene acceso directo a terminal, pero puedes:
 **Solución:**
 - Verifica que `APP_URL` sea correcto y use `https://`
 - En local, asegúrate de haber corrido: `npm run build`
+
+### ❌ Error: "ext-intl" o "ext-zip" requeridas
+**Solución:**
+- Asegúrate de tener los archivos `nixpacks.toml` y `railway.toml`
+- Estos archivos instalan automáticamente las extensiones PHP necesarias
+- Redeploy en Railway
 
 ---
 
