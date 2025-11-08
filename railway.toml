@@ -1,0 +1,5 @@
+[PHP]
+extensions = intl,zip,pdo,pdo_mysql,mbstring,bcmath,gd,curl,xml,fileinfo
+
+[build]
+builder = "nixpacks"
