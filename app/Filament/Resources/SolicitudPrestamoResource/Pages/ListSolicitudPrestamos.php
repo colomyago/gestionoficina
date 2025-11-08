@@ -14,7 +14,7 @@ class ListSolicitudPrestamos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Nueva Solicitud')
+                ->label(__('New request'))
                 ->icon('heroicon-o-plus'),
         ];
     }

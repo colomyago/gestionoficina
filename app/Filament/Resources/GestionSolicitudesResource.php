@@ -31,11 +31,11 @@ class GestionSolicitudesResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static ?string $navigationLabel = 'Gestión de Préstamos';
+    protected static ?string $navigationLabel = null;
 
     protected static ?string $modelLabel = 'Solicitud';
 
-    protected static ?string $pluralModelLabel = 'Gestión de Préstamos';
+
 
     protected static ?int $navigationSort = 2;
 

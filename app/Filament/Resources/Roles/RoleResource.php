@@ -21,7 +21,7 @@ class RoleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+     protected static string|\UnitEnum|null $navigationGroup = 'Administration';
     
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -40,11 +40,28 @@ class RoleResource extends Resource
         return RolesTable::configure($table);
     }
 
+    public static function getLabel(): string
+    {
+        return __('Role');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('Roles');
+    }
+
     public static function getRelations(): array
     {
         return [
             //
         ];
+    }
+
+     
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Administration');
     }
 
     public static function getPages(): array

@@ -24,7 +24,8 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Administration';
     
     protected static ?string $navigationLabel = 'Usuarios';
 
@@ -53,6 +54,10 @@ class UserResource extends Resource
         return UsersTable::configure($table);
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Administration');
+    }
     public static function getRelations(): array
     {
         return [
