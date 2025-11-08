@@ -1,13 +1,12 @@
 [phases.setup]
-nixPkgs = ["...", "nodejs_20"]
+nixPkgs = ["nodejs_20", "php82", "php82Extensions.intl", "php82Extensions.zip"]
 
 [phases.build]
 cmds = [
+    "npm ci --legacy-peer-deps",
+    "npm run build",
     "composer install --optimize-autoloader --no-dev --no-interaction"
 ]
 
-[phases.deploy]
-cmds = ["bash ./railway-deploy.sh"]
-
 [start]
-cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "bash ./railway-deploy.sh && php artisan serve --host=0.0.0.0 --port=$PORT"

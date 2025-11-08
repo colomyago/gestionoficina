@@ -1,5 +1,5 @@
-[PHP]
-extensions = intl,zip,pdo,pdo_mysql,mbstring,bcmath,gd,curl,xml,fileinfo
-
 [build]
 builder = "nixpacks"
+
+[deploy]
+startCommand = "php artisan serve --host=0.0.0.0 --port=$PORT"
