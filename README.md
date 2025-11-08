@@ -13,6 +13,11 @@ Un sistema donde los trabajadores pueden pedir prestados equipos (notebooks, pro
 - Dashboard distinto para cada rol
 - Historial completo de todo
 
+## Link de railway
+
+https://gestionoficina-production.up.railway.app/admin/users
+
+
 ## Instalación rápida
 
 Necesitas Docker y WSL2 instalados.
