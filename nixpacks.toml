@@ -1,11 +1,8 @@
-[providers]
-php = "8.2"
-
 [phases.setup]
 nixPkgs = ["php82", "php82Extensions.intl", "php82Extensions.zip", "php82Extensions.mbstring", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "nodejs_20"]
 
 [phases.install]
-cmds = ["composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-req=ext-intl --ignore-platform-req=ext-zip"]
+cmds = ["composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs"]
 
 [phases.build]
 cmds = ["npm ci --legacy-peer-deps", "npm run build"]
