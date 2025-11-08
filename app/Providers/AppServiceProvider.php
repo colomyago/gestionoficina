@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Models\Loan;
@@ -40,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Forzar HTTPS en producción (Railway, etc.)
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Registrar las políticas
         foreach ($this->policies as $model => $policy) {
             Gate::policy($model, $policy);
