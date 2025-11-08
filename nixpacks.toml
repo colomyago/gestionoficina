@@ -2,10 +2,10 @@
 nixPkgs = ['php82', 'php82Extensions.intl', 'php82Extensions.zip', 'php82Extensions.pdo_mysql', 'php82Extensions.redis', 'php82Extensions.sodium']
 
 [phases.install]
-cmds = ['composer install --optimize-autoloader --no-interaction --ignore-platform-reqs']
+cmds = ['composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs']
 
 [phases.build]
-cmds = ['php artisan filament:upgrade']
+cmds = ['composer run post-autoload-dump', 'php artisan migrate --force']
 
 [start]
 cmd = 'php artisan serve --host=0.0.0.0 --port=${PORT:-8000}'
