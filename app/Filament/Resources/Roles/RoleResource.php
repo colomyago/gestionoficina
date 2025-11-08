@@ -57,6 +57,10 @@ class RoleResource extends Resource
         ];
     }
 
+    public static function getModelLabel(): string
+    {
+        return __('Role'); // singular
+    }
      
 
     public static function getNavigationGroup(): ?string

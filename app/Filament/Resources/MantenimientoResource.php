@@ -32,8 +32,6 @@ class MantenimientoResource extends Resource
 
     protected static ?string $navigationLabel = null;
 
-    protected static ?string $modelLabel = 'Solicitud de Mantenimiento';
-
     protected static ?int $navigationSort = 3;
 
     // Solo visible para personal de mantenimiento y admin
@@ -298,6 +296,10 @@ class MantenimientoResource extends Resource
         return __('Maintenance');
     }
 
+    public static function getModelLabel(): string
+    {
+        return __('Maintenance Request'); // singular
+    }
 
 
     public static function getPages(): array
