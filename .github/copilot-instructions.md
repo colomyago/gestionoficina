@@ -42,7 +42,7 @@ Filament actions check policies automatically. Custom checks use `$user->can('up
 
 ## Development Workflows
 
-### Running the Application
+### Running the Application Locally
 ```bash
 # Always use Sail commands (not bare php/artisan)
 ./vendor/bin/sail up -d
@@ -52,6 +52,13 @@ Filament actions check policies automatically. Custom checks use `$user->can('up
 # - http://localhost (public view)
 # - http://localhost/admin (Filament admin panel)
 ```
+
+### Production Environment
+- **Platform:** Railway (https://railway.app)
+- **URL:** https://gestionoficina-production.up.railway.app/admin
+- **Database:** MySQL 8.0 on Railway
+- **Auto-deploy:** Enabled from `main` branch
+- **HTTPS:** Forced via `AppServiceProvider` and `bootstrap/app.php`
 
 ### Database Operations
 ```bash
@@ -115,9 +122,13 @@ Always scope actions to current record state:
 - `docs/SISTEMA_ROLES.md`: Role capabilities reference
 - `docs/FLUJO_COMPLETO_SISTEMA.md`: Complete workflow documentation
 - `docs/COMANDOS_SAIL.md`: Sail command reference
+- `docs/RAILWAY_DEPLOYMENT.md`: Production deployment guide
 - `app/Providers/Filament/AdminPanelProvider.php`: Panel configuration, widget registration
+- `app/Providers/AppServiceProvider.php`: Production HTTPS and cookie configuration
+- `bootstrap/app.php`: Proxy trust configuration for Railway
 - `app/Policies/`: Authorization logic for all models
 - `database/seeders/RoleSeeder.php`: Test user generation
+- `Procfile`: Railway deployment commands
 
 ## Common Gotchas
 - Equipment assignment creates a Loan record even without prior request (Admin direct assignment)
@@ -126,3 +137,5 @@ Always scope actions to current record state:
 - Navigation badges show pending items count (role-filtered)
 - Filament auto-discovery enabled; new resources/widgets appear automatically
 - Spanish is the primary language; all user-facing text must have translations
+- In production, proxies must be trusted (`bootstrap/app.php`) for HTTPS to work correctly
+- Session cookies require `secure=true` and `same_site=lax` in production (`AppServiceProvider.php`)

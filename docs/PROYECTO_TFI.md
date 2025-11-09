@@ -588,9 +588,139 @@ in the Software without restriction...
 
 ---
 
-## 🎓 14. Conclusiones
+## 🚀 14. Deployment y Producción
 
-### 14.1 Aprendizajes Clave
+### 14.1 Entorno de Producción
+
+El sistema está desplegado en **Railway** (https://railway.app), una plataforma moderna de deployment que ofrece:
+
+- ✅ Deployment automático desde GitHub
+- ✅ Base de datos MySQL incluida
+- ✅ HTTPS automático
+- ✅ Escalado vertical sencillo
+- ✅ $5 USD de créditos gratuitos mensuales (~500 horas)
+
+**URL de producción:** https://gestionoficina-production.up.railway.app
+
+### 14.2 Arquitectura de Producción
+
+```
+┌─────────────────────────────────────────┐
+│         Railway Platform                │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │   Aplicación Laravel (Container)    │ │
+│  │   - PHP 8.2                         │ │
+│  │   - Laravel 12                      │ │
+│  │   - Filament 4.0                    │ │
+│  │   - HTTPS forzado                   │ │
+│  │   - Trust Proxies configurado       │ │
+│  └──────────────┬─────────────────────┘ │
+│                 │                        │
+│  ┌──────────────▼─────────────────────┐ │
+│  │   MySQL 8.0 Database               │ │
+│  │   - Backup manual                  │ │
+│  │   - Optimizado para producción     │ │
+│  └────────────────────────────────────┘ │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │   CDN / Static Assets              │ │
+│  │   - CSS/JS compilados              │ │
+│  │   - Vite build                     │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+```
+
+### 14.3 Configuraciones de Seguridad
+
+#### Proxies y HTTPS
+Para que Laravel funcione correctamente detrás del proxy de Railway:
+
+**`bootstrap/app.php`:**
+```php
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
+        Request::HEADER_X_FORWARDED_HOST |
+        Request::HEADER_X_FORWARDED_PORT |
+        Request::HEADER_X_FORWARDED_PROTO |
+        Request::HEADER_X_FORWARDED_AWS_ELB);
+})
+```
+
+**`AppServiceProvider.php`:**
+```php
+if (config('app.env') === 'production') {
+    URL::forceScheme('https');
+    
+    config([
+        'session.secure' => true,
+        'session.http_only' => true,
+        'session.same_site' => 'lax',
+    ]);
+}
+```
+
+### 14.4 Proceso de Deploy
+
+#### Automático desde GitHub
+1. Push a rama `main` en GitHub
+2. Railway detecta cambios automáticamente
+3. Ejecuta build: `composer install` + `npm run build`
+4. Ejecuta Procfile: migraciones + seeders + optimizaciones
+5. Deploy completo en ~2-3 minutos
+
+#### Procfile
+```bash
+web: php artisan migrate --force && 
+     php artisan db:seed --class=RoleSeeder --force && 
+     php artisan config:clear && 
+     php artisan cache:clear && 
+     php artisan serve --host=0.0.0.0 --port=$PORT
+```
+
+### 14.5 Variables de Entorno en Producción
+
+```bash
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:...
+DB_CONNECTION=mysql
+SESSION_DRIVER=database
+CACHE_STORE=database
+LOG_LEVEL=error
+```
+
+### 14.6 Monitoreo
+
+Railway proporciona:
+- 📊 Métricas de CPU y memoria
+- 📝 Logs en tiempo real
+- 🔔 Alertas de fallos
+- 📈 Uso de créditos mensuales
+
+### 14.7 Backup y Recuperación
+
+**Estrategia de Backup:**
+- Manual: Exportar base de datos MySQL via Railway dashboard
+- Frecuencia recomendada: Semanal
+- Almacenamiento: Local + Git (estructura)
+
+**Recuperación ante desastres:**
+1. Railway mantiene snapshots de contenedores
+2. Redeploy desde commit anterior en GitHub
+3. Restaurar backup de base de datos si es necesario
+
+### 14.8 Documentación de Deployment
+
+Para deployment detallado, consultar:
+- [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) - Guía paso a paso completa
+- [README.md](../README.md) - Quickstart y enlaces
+
+---
+
+## 🎓 15. Conclusiones
+
+### 15.1 Aprendizajes Clave
 
 Durante el desarrollo de este proyecto se aplicaron conocimientos de:
 
@@ -602,8 +732,10 @@ Durante el desarrollo de este proyecto se aplicaron conocimientos de:
 - ✅ Frameworks modernos (Laravel, Filament)
 - ✅ Seguridad (Autenticación, Autorización, Políticas)
 - ✅ Testing y calidad de código
+- ✅ Deployment y DevOps (Railway, CI/CD)
+- ✅ Configuración de producción (HTTPS, Proxies, Sesiones)
 
-### 14.2 Resultados Obtenidos
+### 15.2 Resultados Obtenidos
 
 El sistema cumple con todos los objetivos planteados:
 
@@ -612,8 +744,9 @@ El sistema cumple con todos los objetivos planteados:
 ✅ **Seguro:** Sistema de roles y permisos robusto  
 ✅ **Mantenible:** Código limpio y documentado  
 ✅ **Eficiente:** Respuesta rápida y optimizada  
+✅ **Desplegado:** Sistema en producción accesible 24/7  
 
-### 14.3 Trabajo Futuro
+### 15.3 Trabajo Futuro
 
 Posibles mejoras y extensiones:
 
@@ -628,6 +761,7 @@ Posibles mejoras y extensiones:
 
 ---
 
-**📅 Última actualización:** 4 de noviembre de 2025  
-**📌 Versión del documento:** 1.0.0  
-**👥 Equipo:** Yago Colombo, Gaston Heinz y Tomas Mattei
+**📅 Última actualización:** 9 de noviembre de 2025  
+**📌 Versión del documento:** 1.1.0  
+**👥 Equipo:** Yago Colombo, Gaston Heinz y Tomas Mattei  
+**🌐 Producción:** https://gestionoficina-production.up.railway.app
