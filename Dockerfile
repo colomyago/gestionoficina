@@ -26,6 +26,14 @@ WORKDIR /app
 # Copiar archivos de dependencias primero (para cache)
 COPY composer.json composer.lock ./
 
+# Copiar archivos necesarios para Composer scripts
+COPY artisan ./
+COPY bootstrap ./bootstrap
+COPY config ./config
+COPY database ./database
+COPY routes ./routes
+COPY app ./app
+
 # Instalar dependencias PHP
 RUN composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs
 
