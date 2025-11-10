@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Routing\UrlGenerator;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Models\Loan;
@@ -39,13 +40,11 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(UrlGenerator $url): void
     {
         // Forzar HTTPS en producción (Railway, etc.)
-        if (config('app.env') === 'production') {
-            URL::forceScheme('https');
-            
-            // Forzar cookies seguras
+         if (app()->environment() !== 'production') {
+            $url->forceScheme('https');
             config([
                 'session.secure' => true,
                 'session.http_only' => true,
@@ -59,4 +58,3 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 }
-
