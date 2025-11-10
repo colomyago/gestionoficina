@@ -34,6 +34,13 @@ COPY database ./database
 COPY routes ./routes
 COPY app ./app
 
+# Crear estructura de directorios de storage necesaria para Laravel
+RUN mkdir -p storage/framework/cache/data \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache
+
 # Instalar dependencias PHP
 RUN composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs
 
