@@ -13,6 +13,11 @@ class EquipmentSeeder extends Seeder
      */
     public function run(): void
     {
+        // Solo crear equipos si la tabla está vacía (evitar duplicados en re-deployments)
+        if (Equipment::count() > 0) {
+            return;
+        }
+
         $equipments = [
             [
                 'name' => 'Laptop Dell Inspiron 15',
@@ -20,9 +25,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Computadoras',
                 'description' => 'Laptop para trabajo de oficina con procesador Intel i5, 8GB RAM, 256GB SSD',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Laptop HP ProBook 450',
@@ -30,9 +32,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Computadoras',
                 'description' => 'Laptop con Intel i7, 16GB RAM, 512GB SSD',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Proyector Epson PowerLite',
@@ -40,9 +39,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Proyección',
                 'description' => 'Proyector para presentaciones, resolución 1080p, 3000 lúmenes',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Cámara Canon EOS R6',
@@ -50,9 +46,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Fotografía',
                 'description' => 'Cámara profesional para fotografía y video, incluye lente 24-70mm',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Tablet iPad Pro 12.9"',
@@ -60,9 +53,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Tablets',
                 'description' => 'Tablet para diseño y presentaciones, incluye Apple Pencil',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Monitor Samsung 27" 4K',
@@ -70,9 +60,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Monitores',
                 'description' => 'Monitor externo para estaciones de trabajo, resolución 4K, conexión USB-C',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Impresora HP LaserJet Pro',
@@ -80,9 +67,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Impresoras',
                 'description' => 'Impresora láser monocromática, ideal para documentos de oficina',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Micrófono Blue Yeti',
@@ -90,9 +74,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Audio',
                 'description' => 'Micrófono USB para grabaciones y videoconferencias de alta calidad',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Router Wi-Fi 6 TP-Link',
@@ -100,9 +81,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Redes',
                 'description' => 'Router de alta velocidad para redes empresariales, Wi-Fi 6',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Disco Duro Externo 2TB',
@@ -110,9 +88,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Almacenamiento',
                 'description' => 'Almacenamiento portátil para respaldos, USB 3.0, 2TB de capacidad',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ],
             [
                 'name' => 'Teclado Mecánico Logitech',
@@ -120,9 +95,6 @@ class EquipmentSeeder extends Seeder
                 'categoria' => 'Periféricos',
                 'description' => 'Teclado mecánico para programación, switches azules, retroiluminado',
                 'status' => 'disponible',
-                'user_id' => null,
-                'fecha_prestado' => null,
-                'fecha_devolucion' => null,
             ]
         ];
 

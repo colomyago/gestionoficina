@@ -69,12 +69,19 @@ Después entrás en http://localhost y http://localhost/admin
 
 Tenemos documentación detallada en la carpeta `docs/`:
 
+### 🚀 Deployment y Producción
+- **[Railway Deployment - Guía Completa](docs/RAILWAY_DEPLOYMENT.md)** - Tutorial paso a paso para desplegar en Railway
+- **[Railway Quickstart](docs/RAILWAY_QUICKSTART.md)** - Guía rápida de 15 minutos para deployment
+
+### 📖 Documentación del Sistema
 - [Instalación completa](docs/installing.md) - Si el proceso rápido no te funciona
-- [Deployment en Railway](docs/RAILWAY_DEPLOYMENT.md) - Guía paso a paso para producción
 - [Especificación de requisitos](docs/srs-gestionoficina.md) - Qué hace el sistema
 - [Sistema de roles](docs/SISTEMA_ROLES.md) - Quién puede hacer qué
 - [Flujos del sistema](docs/FLUJO_COMPLETO_SISTEMA.md) - Cómo funciona todo
-- [Comandos útiles](docs/COMANDOS_SAIL.md) - Referencia rápida de comandos
+
+### 🔧 Referencia Técnica
+- [Comandos Sail útiles](docs/COMANDOS_SAIL.md) - Referencia rápida de comandos Docker/Sail
+- [Proyecto TFI](docs/PROYECTO_TFI.md) - Documentación del trabajo final integrador
 
 ## Cómo funciona
 
