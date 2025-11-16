@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
+use App\Models\SystemSetting;
 
 class SolicitudPrestamoResource extends Resource
 {
@@ -64,6 +65,28 @@ class SolicitudPrestamoResource extends Resource
     {
         $user = Auth::user();
         return $user && ($user->isTrabajador() || $user->isAdmin());
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = Auth::user();
+        
+        // Admin siempre puede crear (para otros usuarios)
+        if ($user && $user->isAdmin()) {
+            return true;
+        }
+        
+        // Trabajador: verificar límite de equipos
+        if ($user && $user->isTrabajador()) {
+            $maxEquipments = SystemSetting::get('max_equipments_per_worker', 5);
+            $currentActiveLoans = Loan::where('user_id', $user->id)
+                ->where('status', 'activo')
+                ->count();
+            
+            return $currentActiveLoans < $maxEquipments;
+        }
+        
+        return false;
     }
 
     public static function form(Schema $schema): Schema

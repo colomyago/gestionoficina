@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
+use App\Models\SystemSetting;
+use Illuminate\Support\Facades\DB;
 
 class GestionSolicitudesResource extends Resource
 {
@@ -220,32 +222,57 @@ class GestionSolicitudesResource extends Resource
                                 ->columnSpanFull(),
                         ])
                         ->action(function (Loan $record, array $data) {
-                            // Validar que el equipo esté disponible
-                            $record->load('equipment');
+                            // Usar transacción para evitar race conditions
+                            DB::beginTransaction();
                             
-                            if ($record->equipment->status !== 'disponible') {
-                                Notification::make()
-                                    ->title('Equipo no disponible')
-                                    ->danger()
-                                    ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
-                                    ->send();
-                                return;
-                            }
+                            try {
+                                // Recargar el registro con bloqueo
+                                $record = Loan::lockForUpdate()->findOrFail($record->id);
+                                $record->load('equipment', 'user');
+                                
+                                // Validar que el equipo esté disponible
+                                if ($record->equipment->status !== 'disponible') {
+                                    DB::rollBack();
+                                    Notification::make()
+                                        ->title('Equipo no disponible')
+                                        ->danger()
+                                        ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
+                                        ->send();
+                                    return;
+                                }
 
-                            // Verificar que no haya otro préstamo activo para este equipo
-                            $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
-                                ->where('id', '!=', $record->id)
-                                ->where('status', 'activo')
-                                ->first();
+                                // Verificar que no haya otro préstamo activo para este equipo
+                                $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
+                                    ->where('id', '!=', $record->id)
+                                    ->where('status', 'activo')
+                                    ->lockForUpdate()
+                                    ->first();
 
-                            if ($otherActiveLoan) {
-                                Notification::make()
-                                    ->title('Equipo ya prestado')
-                                    ->danger()
-                                    ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
-                                    ->send();
-                                return;
-                            }
+                                if ($otherActiveLoan) {
+                                    DB::rollBack();
+                                    Notification::make()
+                                        ->title('Equipo ya prestado')
+                                        ->danger()
+                                        ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
+                                        ->send();
+                                    return;
+                                }
+                                
+                                // Verificar límite de equipos del trabajador
+                                $maxEquipments = SystemSetting::get('max_equipments_per_worker', 5);
+                                $currentActiveLoans = Loan::where('user_id', $record->user_id)
+                                    ->where('status', 'activo')
+                                    ->count();
+                                
+                                if ($currentActiveLoans >= $maxEquipments) {
+                                    DB::rollBack();
+                                    Notification::make()
+                                        ->title('Límite de equipos alcanzado')
+                                        ->danger()
+                                        ->body($record->user->name . ' ya tiene ' . $currentActiveLoans . ' equipos activos. Límite: ' . $maxEquipments)
+                                        ->send();
+                                    return;
+                                }
 
                             // Fecha de préstamo automática con fecha y hora actual
                             $fechaPrestamoAhora = now();
@@ -258,17 +285,28 @@ class GestionSolicitudesResource extends Resource
                                 'assigned_by' => Auth::id(),
                             ]);
 
-                            // Actualizar el equipo
-                            $record->equipment->update([
-                                'status' => 'prestado',
-                                'user_id' => $record->user_id,
-                            ]);
+                                // Actualizar el equipo
+                                $record->equipment->update([
+                                    'status' => 'prestado',
+                                    'user_id' => $record->user_id,
+                                ]);
 
-                            Notification::make()
-                                ->title('Solicitud aprobada')
-                                ->success()
-                                ->body('El equipo ha sido asignado a ' . $record->user->name . ' el ' . $fechaPrestamoAhora->format('d/m/Y H:i'))
-                                ->send();
+                                DB::commit();
+                                
+                                Notification::make()
+                                    ->title('Solicitud aprobada')
+                                    ->success()
+                                    ->body('El equipo ha sido asignado a ' . $record->user->name . ' el ' . $fechaPrestamoAhora->format('d/m/Y H:i'))
+                                    ->send();
+                                    
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error al aprobar')
+                                    ->danger()
+                                    ->body('Ocurrió un error: ' . $e->getMessage())
+                                    ->send();
+                            }
                         }),
 
                     Action::make('rechazar')
