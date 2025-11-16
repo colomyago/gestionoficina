@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(UrlGenerator $url): void
     {
         // Forzar HTTPS en producción (Railway, etc.)
-         if (app()->environment() !== 'production') {
+         if (app()->environment() === 'production') {
             $url->forceScheme('https');
             config([
                 'session.secure' => true,
