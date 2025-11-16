@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Equipment\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Schemas\Schema;
 
 class EquipmentInfolist
@@ -11,6 +12,12 @@ class EquipmentInfolist
     {
         return $schema
             ->components([
+                ImageEntry::make('image')
+                    ->label(__('Image'))
+                    ->defaultImageUrl(url('/images/default-equipment.svg'))
+                    ->size(200)
+                    ->columnSpanFull(),
+                    
                 TextEntry::make('name'),
                 TextEntry::make('description')
                     ->placeholder('-')

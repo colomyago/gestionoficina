@@ -14,6 +14,7 @@ class Equipment extends Model
         'codigo',
         'categoria',
         'description',
+        'image',
         'status',
         'user_id',
     ];

@@ -6,6 +6,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 use App\Models\User;
 
@@ -48,6 +49,21 @@ class EquipmentForm
                     ->label(__('Description'))
                     ->columnSpanFull()
                     ->rows(3),
+                
+                FileUpload::make('image')
+                    ->label(__('Image'))
+                    ->image()
+                    ->maxSize(2048) // 2MB
+                    ->directory('equipment-images')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->imageEditorAspectRatios([
+                        '16:9',
+                        '4:3',
+                        '1:1',
+                    ])
+                    ->helperText(__('Maximum size: 2MB. Recommended: 800x600px'))
+                    ->columnSpanFull(),
                     
                 Select::make('status')
                     ->label(__('Status'))

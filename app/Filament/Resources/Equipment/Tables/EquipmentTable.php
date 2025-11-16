@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Equipment\Tables;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
@@ -32,6 +33,12 @@ class EquipmentTable
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['user', 'activeLoan.user']))
             ->columns([
+                ImageColumn::make('image')
+                    ->label(__('Image'))
+                    ->circular()
+                    ->defaultImageUrl(url('/images/default-equipment.svg'))
+                    ->size(50),
+                    
                 TextColumn::make('codigo')
                     ->label(__('Code'))
                     ->searchable()
