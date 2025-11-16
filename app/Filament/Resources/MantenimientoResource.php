@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\DB;
+use App\Models\Loan;
 
 class MantenimientoResource extends Resource
 {
@@ -262,22 +264,52 @@ class MantenimientoResource extends Resource
                                 ->helperText('Explica por qué se da de baja el equipo'),
                         ])
                         ->action(function (MaintenanceRequest $record, array $data) {
-                            $record->update([
-                                'status' => 'completado',
-                                'resultado' => 'dado_de_baja',
-                                'solucion' => $data['solucion'],
-                                'fecha_completado' => now(),
-                            ]);
+                            DB::beginTransaction();
+                            
+                            try {
+                                $record->update([
+                                    'status' => 'completado',
+                                    'resultado' => 'dado_de_baja',
+                                    'solucion' => $data['solucion'],
+                                    'fecha_completado' => now(),
+                                ]);
 
-                            // Marcar el equipo como dado de baja
-                            $record->equipment->update([
-                                'status' => 'baja',
-                            ]);
+                                // Cerrar cualquier préstamo activo antes de dar de baja
+                                $activeLoan = Loan::where('equipment_id', $record->equipment_id)
+                                    ->where('status', 'activo')
+                                    ->first();
+                                
+                                if ($activeLoan) {
+                                    $activeLoan->update([
+                                        'status' => 'devuelto',
+                                        'fecha_devolucion_real' => now(),
+                                        'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') .
+                                                   'Préstamo finalizado automáticamente - Equipo dado de baja: ' . $data['solucion']
+                                    ]);
+                                }
 
-                            Notification::make()
-                                ->title('Equipo dado de baja')
-                                ->warning()
-                                ->send();
+                                // Marcar el equipo como dado de baja
+                                $record->equipment->update([
+                                    'status' => 'baja',
+                                    'user_id' => null,
+                                ]);
+                                
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Equipo dado de baja')
+                                    ->warning()
+                                    ->body($activeLoan ? 'El préstamo activo fue cerrado automáticamente' : null)
+                                    ->send();
+                                    
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Ocurrió un error: ' . $e->getMessage())
+                                    ->send();
+                            }
                         }),
 
                     EditAction::make()

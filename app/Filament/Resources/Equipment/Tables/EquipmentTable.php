@@ -92,12 +92,38 @@ class EquipmentTable
                                 ->required()
                                 ->helperText('Selecciona el trabajador al que se asignará el equipo'),
                             
+                            Select::make('periodo_prestamo')
+                                ->label('Período de Préstamo')
+                                ->options([
+                                    '2' => '2 días',
+                                    '5' => '5 días (1 semana laboral)',
+                                    '10' => '10 días',
+                                    '15' => '15 días (2 semanas)',
+                                    '21' => '3 semanas',
+                                    '30' => '30 días (1 mes)',
+                                    '45' => '45 días',
+                                    '90' => '90 días (3 meses)',
+                                    'custom' => 'Fecha personalizada...',
+                                ])
+                                ->default('10')
+                                ->required()
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    if ($state !== 'custom' && is_numeric($state)) {
+                                        $set('fecha_devolucion', now()->addDays((int)$state)->format('Y-m-d'));
+                                    }
+                                }),
+                            
                             DatePicker::make('fecha_devolucion')
-                                ->label('Fecha Estimada de Devolución')
+                                ->label('Fecha Exacta')
                                 ->minDate(now()->addDay())
                                 ->required()
+                                ->visible(fn ($get) => $get('periodo_prestamo') === 'custom')
+                                ->helperText('Selecciona una fecha específica')
                                 ->default(now()->addWeek())
-                                ->helperText('¿Cuándo debe devolver el equipo?'),
+                                ->native(false)
+                                ->displayFormat('d/m/Y')
+                                ->format('Y-m-d'),
                             
                             Textarea::make('notas')
                                 ->label('Notas')
@@ -106,6 +132,11 @@ class EquipmentTable
                                 ->maxLength(500),
                         ])
                         ->action(function ($record, array $data) {
+                            // Calcular fecha de devolución basada en el período o fecha custom
+                            if (isset($data['periodo_prestamo']) && $data['periodo_prestamo'] !== 'custom' && is_numeric($data['periodo_prestamo'])) {
+                                $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
+                            }
+                            
                             // Crear el préstamo directamente como activo
                             $loan = Loan::create([
                                 'equipment_id' => $record->id,

@@ -122,7 +122,23 @@ class SolicitudPrestamoResource extends Resource
                     ->rows(3)
                     ->maxLength(500)
                     ->helperText(__('Briefly explain why you need this device')),
-            ]);
+            ])
+            ->statePath('data')
+            ->model(Loan::class)
+            ->before(function (array $data) {
+                // Validar que no exista una solicitud pendiente o préstamo activo del mismo equipo
+                $userId = Auth::user()->isAdmin() && isset($data['user_id']) ? $data['user_id'] : Auth::id();
+                
+                $existingLoan = Loan::where('equipment_id', $data['equipment_id'])
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['pendiente', 'activo'])
+                    ->first();
+                
+                if ($existingLoan) {
+                    $statusText = $existingLoan->status === 'pendiente' ? 'solicitud pendiente' : 'préstamo activo';
+                    throw new \Exception("Ya tienes una {$statusText} para este equipo.");
+                }
+            });
     }
 
     public static function table(Table $table): Table

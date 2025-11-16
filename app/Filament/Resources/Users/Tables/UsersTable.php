@@ -99,12 +99,38 @@ class UsersTable
                             ->required()
                             ->helperText(__('Only available devices are shown')),
                         
+                        Select::make('periodo_prestamo')
+                            ->label(__('Loan Period'))
+                            ->options([
+                                '2' => '2 ' . __('days'),
+                                '5' => '5 ' . __('days') . ' (1 ' . __('work week') . ')',
+                                '10' => '10 ' . __('days'),
+                                '15' => '15 ' . __('days') . ' (2 ' . __('weeks') . ')',
+                                '21' => '3 ' . __('weeks'),
+                                '30' => '30 ' . __('days') . ' (1 ' . __('month') . ')',
+                                '45' => '45 ' . __('days'),
+                                '90' => '90 ' . __('days') . ' (3 ' . __('months') . ')',
+                                'custom' => __('Custom date') . '...',
+                            ])
+                            ->default('10')
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state !== 'custom' && is_numeric($state)) {
+                                    $set('fecha_devolucion', now()->addDays((int)$state)->format('Y-m-d'));
+                                }
+                            }),
+                        
                         DatePicker::make('fecha_devolucion')
-                            ->label(__('Estimated return date'))
+                            ->label(__('Exact Date'))
                             ->minDate(now()->addDay())
                             ->required()
+                            ->visible(fn ($get) => $get('periodo_prestamo') === 'custom')
+                            ->helperText(__('Select a specific date'))
                             ->default(now()->addWeek())
-                            ->helperText(__('When should the device be returned?')),
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d'),
                         
                         Textarea::make('notas')
                             ->label(__('Notes'))
@@ -113,6 +139,11 @@ class UsersTable
                             ->maxLength(500),
                     ])
                     ->action(function ($record, array $data) {
+                        // Calcular fecha de devolución basada en el período o fecha custom
+                        if (isset($data['periodo_prestamo']) && $data['periodo_prestamo'] !== 'custom' && is_numeric($data['periodo_prestamo'])) {
+                            $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
+                        }
+                        
                         $equipment = Equipment::find($data['equipment_id']);
                         
                         // Verificar disponibilidad

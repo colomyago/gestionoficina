@@ -25,7 +25,9 @@ use Filament\Notifications\Notification;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
 use App\Models\SystemSetting;
+use App\Services\LoanValidationService;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class GestionSolicitudesResource extends Resource
 {
@@ -209,12 +211,38 @@ class GestionSolicitudesResource extends Resource
                                 ->content('Se registrará automáticamente al aprobar')
                                 ->helperText('El sistema registrará la fecha y hora exacta de aprobación'),
                             
+                            Select::make('periodo_prestamo')
+                                ->label('Período de Préstamo')
+                                ->options([
+                                    '2' => '2 días',
+                                    '5' => '5 días (1 semana laboral)',
+                                    '10' => '10 días',
+                                    '15' => '15 días (2 semanas)',
+                                    '21' => '3 semanas',
+                                    '30' => '30 días (1 mes)',
+                                    '45' => '45 días',
+                                    '90' => '90 días (3 meses)',
+                                    'custom' => 'Fecha personalizada...',
+                                ])
+                                ->default('10')
+                                ->required()
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    if ($state !== 'custom' && is_numeric($state)) {
+                                        $set('fecha_devolucion', now()->addDays((int)$state)->format('Y-m-d'));
+                                    }
+                                }),
+                            
                             DatePicker::make('fecha_devolucion')
-                                ->label(__('Estimated return date')) //Fecha Estimada de Devolución
+                                ->label('Fecha Exacta')
                                 ->minDate(now()->addDay())
                                 ->required()
-                                ->helperText('¿Cuándo debe devolver el equipo?')
-                                ->default(now()->addWeek()),
+                                ->visible(fn ($get) => $get('periodo_prestamo') === 'custom')
+                                ->helperText('Selecciona una fecha específica')
+                                ->default(now()->addWeek())
+                                ->native(false)
+                                ->displayFormat('d/m/Y')
+                                ->format('Y-m-d'),
                             
                             Textarea::make('notas')
                                 ->label(__('Admin notes')) //Notas del admin
@@ -231,46 +259,36 @@ class GestionSolicitudesResource extends Resource
                                 $record = Loan::lockForUpdate()->findOrFail($record->id);
                                 $record->load('equipment', 'user');
                                 
-                                // Validar que el equipo esté disponible
-                                if ($record->equipment->status !== 'disponible') {
-                                    DB::rollBack();
-                                    Notification::make()
-                                        ->title('Equipo no disponible')
-                                        ->danger()
-                                        ->body('El equipo no está disponible. Estado actual: ' . $record->equipment->status)
-                                        ->send();
-                                    return;
+                                // Calcular fecha de devolución basada en el período o fecha custom
+                                if (isset($data['periodo_prestamo']) && $data['periodo_prestamo'] !== 'custom' && is_numeric($data['periodo_prestamo'])) {
+                                    $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
                                 }
-
-                                // Verificar que no haya otro préstamo activo para este equipo
-                                $otherActiveLoan = Loan::where('equipment_id', $record->equipment_id)
-                                    ->where('id', '!=', $record->id)
-                                    ->where('status', 'activo')
-                                    ->lockForUpdate()
-                                    ->first();
-
-                                if ($otherActiveLoan) {
+                                
+                                // Validar fecha de devolución
+                                $dateValidation = LoanValidationService::validateReturnDate($data['fecha_devolucion'] ?? null);
+                                if (!$dateValidation['valid']) {
                                     DB::rollBack();
                                     Notification::make()
-                                        ->title('Equipo ya prestado')
+                                        ->title('Fecha inválida')
                                         ->danger()
-                                        ->body('Este equipo ya tiene un préstamo activo para ' . $otherActiveLoan->user->name)
+                                        ->body($dateValidation['message'])
                                         ->send();
                                     return;
                                 }
                                 
-                                // Verificar límite de equipos del trabajador
-                                $maxEquipments = SystemSetting::get('max_equipments_per_worker', 5);
-                                $currentActiveLoans = Loan::where('user_id', $record->user_id)
-                                    ->where('status', 'activo')
-                                    ->count();
+                                // Validar que el préstamo sea posible
+                                $validation = LoanValidationService::canLoanEquipment(
+                                    $record->equipment_id,
+                                    $record->user_id,
+                                    $record->id
+                                );
                                 
-                                if ($currentActiveLoans >= $maxEquipments) {
+                                if (!$validation['valid']) {
                                     DB::rollBack();
                                     Notification::make()
-                                        ->title('Límite de equipos alcanzado')
+                                        ->title('No se puede aprobar')
                                         ->danger()
-                                        ->body($record->user->name . ' ya tiene ' . $currentActiveLoans . ' equipos activos. Límite: ' . $maxEquipments)
+                                        ->body($validation['message'])
                                         ->send();
                                     return;
                                 }

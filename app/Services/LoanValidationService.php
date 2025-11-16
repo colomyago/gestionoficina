@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Loan;
+use App\Models\Equipment;
+use App\Models\SystemSetting;
+use Illuminate\Support\Facades\DB;
+
+class LoanValidationService
+{
+    /**
+     * Validar que un equipo pueda ser prestado
+     */
+    public static function canLoanEquipment(int $equipmentId, int $userId, ?int $excludeLoanId = null): array
+    {
+        $equipment = Equipment::find($equipmentId);
+        
+        if (!$equipment) {
+            return [
+                'valid' => false,
+                'message' => 'El equipo no existe'
+            ];
+        }
+
+        // Verificar disponibilidad del equipo
+        if ($equipment->status !== 'disponible') {
+            return [
+                'valid' => false,
+                'message' => "El equipo no está disponible. Estado actual: {$equipment->status}"
+            ];
+        }
+
+        // Verificar que no haya otro préstamo activo
+        $otherActiveLoan = Loan::where('equipment_id', $equipmentId)
+            ->where('status', 'activo')
+            ->when($excludeLoanId, fn($q) => $q->where('id', '!=', $excludeLoanId))
+            ->first();
+
+        if ($otherActiveLoan) {
+            return [
+                'valid' => false,
+                'message' => "El equipo ya está prestado a {$otherActiveLoan->user->name}"
+            ];
+        }
+
+        // Verificar límite de equipos del usuario
+        $maxEquipments = SystemSetting::get('max_equipments_per_worker', 5);
+        $currentActiveLoans = Loan::where('user_id', $userId)
+            ->where('status', 'activo')
+            ->when($excludeLoanId, fn($q) => $q->where('id', '!=', $excludeLoanId))
+            ->count();
+
+        if ($currentActiveLoans >= $maxEquipments) {
+            return [
+                'valid' => false,
+                'message' => "El usuario ya tiene {$currentActiveLoans} equipos activos. Límite: {$maxEquipments}"
+            ];
+        }
+
+        // Verificar solicitudes duplicadas
+        $duplicateLoan = Loan::where('equipment_id', $equipmentId)
+            ->where('user_id', $userId)
+            ->whereIn('status', ['pendiente', 'activo'])
+            ->when($excludeLoanId, fn($q) => $q->where('id', '!=', $excludeLoanId))
+            ->first();
+
+        if ($duplicateLoan) {
+            $statusText = $duplicateLoan->status === 'pendiente' ? 'solicitud pendiente' : 'préstamo activo';
+            return [
+                'valid' => false,
+                'message' => "El usuario ya tiene una {$statusText} para este equipo"
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'message' => 'El préstamo es válido'
+        ];
+    }
+
+    /**
+     * Validar fecha de devolución
+     */
+    public static function validateReturnDate($date): array
+    {
+        if (!$date) {
+            return [
+                'valid' => false,
+                'message' => 'La fecha de devolución es requerida'
+            ];
+        }
+
+        $returnDate = \Carbon\Carbon::parse($date);
+        
+        if ($returnDate->isPast()) {
+            return [
+                'valid' => false,
+                'message' => 'La fecha de devolución no puede estar en el pasado'
+            ];
+        }
+
+        if ($returnDate->isToday()) {
+            return [
+                'valid' => false,
+                'message' => 'La fecha de devolución debe ser al menos mañana'
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'message' => 'Fecha válida'
+        ];
+    }
+}
