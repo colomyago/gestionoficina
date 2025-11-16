@@ -212,15 +212,16 @@ class MantenimientoResource extends Resource
                                 DB::commit();
 
                                 Notification::make()
-                                    ->title('Solicitud tomada')
+                                    ->title(__('Task taken'))
                                     ->success()
+                                    ->body(__('You are now responsible for this maintenance'))
                                     ->send();
                             } catch (\Exception $e) {
                                 DB::rollBack();
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('Ocurrió un error al tomar la tarea. Intente nuevamente.')
+                                    ->body(__('An error occurred while taking the task. Please try again.'))
                                     ->send();
                             }
                         }),
@@ -236,7 +237,7 @@ class MantenimientoResource extends Resource
                         ->requiresConfirmation()
                         ->form([
                             Textarea::make('solucion')
-                                ->label('Solución Aplicada')
+                                ->label(__('Solution'))
                                 ->required()
                                 ->rows(3),
                         ])
@@ -258,15 +259,15 @@ class MantenimientoResource extends Resource
                                 DB::commit();
 
                                 Notification::make()
-                                    ->title('Equipo reparado y disponible')
+                                    ->title(__('Equipment repaired and available'))
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 DB::rollBack();
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('Ocurrió un error al marcar como reparado. Intente nuevamente.')
+                                    ->body(__('An error occurred while marking as repaired. Please try again.'))
                                     ->send();
                             }
                         }),
@@ -285,7 +286,7 @@ class MantenimientoResource extends Resource
                                 ->label(__('Cancel reason')) // Motivo de la Baja
                                 ->required()
                                 ->rows(3)
-                                ->helperText('Explica por qué se da de baja el equipo'),
+                                ->helperText(__('Explain why the device is being decommissioned')),
                         ])
                         ->action(function (MaintenanceRequest $record, array $data) {
                             DB::beginTransaction();
@@ -308,7 +309,7 @@ class MantenimientoResource extends Resource
                                         'status' => 'devuelto',
                                         'fecha_devolucion_real' => now(),
                                         'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') .
-                                                   'Préstamo finalizado automáticamente - Equipo dado de baja: ' . $data['solucion']
+                                                   __('Loan automatically ended - Device decommissioned: :reason', ['reason' => $data['solucion']])
                                     ]);
                                 }
 
@@ -321,17 +322,17 @@ class MantenimientoResource extends Resource
                                 DB::commit();
 
                                 Notification::make()
-                                    ->title('Equipo dado de baja')
+                                    ->title(__('Equipment decommissioned'))
                                     ->warning()
-                                    ->body($activeLoan ? 'El préstamo activo fue cerrado automáticamente' : null)
+                                    ->body($activeLoan ? __('The active loan was closed automatically') : null)
                                     ->send();
                                     
                             } catch (\Exception $e) {
                                 DB::rollBack();
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('Ocurrió un error: ' . $e->getMessage())
+                                    ->body(__('An error occurred: :message', ['message' => $e->getMessage()]))
                                     ->send();
                             }
                         }),

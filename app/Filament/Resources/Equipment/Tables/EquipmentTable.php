@@ -44,6 +44,13 @@ class EquipmentTable
                     
                 BadgeColumn::make('status')
                     ->label(__('Status'))
+                    ->icon(fn (string $state): string => match ($state) {
+                        'disponible' => 'heroicon-o-check-circle',
+                        'prestado' => 'heroicon-o-arrow-right-circle',
+                        'mantenimiento' => 'heroicon-o-wrench-screwdriver',
+                        'baja' => 'heroicon-o-x-circle',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
                     ->colors([
                         'success' => 'disponible',
                         'warning' => 'prestado',
@@ -51,18 +58,20 @@ class EquipmentTable
                         'danger' => 'baja',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'disponible' => 'Disponible',
-                        'prestado' => 'Prestado',
-                        'mantenimiento' => 'Mantenimiento',
-                        'baja' => 'Dado de Baja',
+                        'disponible' => __('Available'),
+                        'prestado' => __('Loaned'),
+                        'mantenimiento' => __('In Maintenance'),
+                        'baja' => __('Decommissioned'),
                         default => $state,
-                    }),
+                    })
+                    ->tooltip(__('Current device status')),
                     
                 TextColumn::make('user.name')
                     ->label(__('User'))
                     ->searchable()
                     ->sortable()
-                    ->placeholder('Sin asignar'),
+                    ->placeholder(__('Unassigned'))
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->filters([
                 //
@@ -76,7 +85,7 @@ class EquipmentTable
                     
                     // ACCIÓN: Asignar Directamente (solo admin, equipos disponibles)
                     Action::make('asignar')
-                        ->label('Asignar Equipo')
+                        ->label(__('Assign Equipment'))
                         ->icon('heroicon-o-user-plus')
                         ->color('success')
                         ->visible(fn ($record): bool => 
@@ -85,26 +94,26 @@ class EquipmentTable
                         )
                         ->form([
                             Select::make('user_id')
-                                ->label('Asignar a')
+                                ->label(__('Assign to'))
                                 ->options(\App\Models\User::whereHas('role', function ($query) {
                                     $query->where('code', 'trabajador');
                                 })->pluck('name', 'id'))
                                 ->searchable()
                                 ->required()
-                                ->helperText('Selecciona el trabajador al que se asignará el equipo'),
+                                ->helperText(__('Select the worker to assign the device to')),
                             
                             Select::make('periodo_prestamo')
-                                ->label('Período de Préstamo')
+                                ->label(__('Loan Period'))
                                 ->options([
-                                    '2' => '2 días',
-                                    '5' => '5 días (1 semana laboral)',
-                                    '10' => '10 días',
-                                    '15' => '15 días (2 semanas)',
-                                    '21' => '3 semanas',
-                                    '30' => '30 días (1 mes)',
-                                    '45' => '45 días',
-                                    '90' => '90 días (3 meses)',
-                                    'custom' => 'Fecha personalizada...',
+                                    '2' => __('2 days'),
+                                    '5' => __('5 days (1 work week)'),
+                                    '10' => __('10 days'),
+                                    '15' => __('15 days (2 weeks)'),
+                                    '21' => __('3 weeks'),
+                                    '30' => __('30 days (1 month)'),
+                                    '45' => __('45 days'),
+                                    '90' => __('90 days (3 months)'),
+                                    'custom' => __('Custom date...'),
                                 ])
                                 ->default('10')
                                 ->required()
@@ -116,20 +125,20 @@ class EquipmentTable
                                 }),
                             
                             DatePicker::make('fecha_devolucion')
-                                ->label('Fecha Exacta')
+                                ->label(__('Exact Date'))
                                 ->minDate(now()->addDay())
                                 ->required()
                                 ->visible(fn ($get) => $get('periodo_prestamo') === 'custom')
-                                ->helperText('Selecciona una fecha específica')
+                                ->helperText(__('Select a specific date'))
                                 ->default(now()->addWeek())
                                 ->native(false)
                                 ->displayFormat('d/m/Y')
                                 ->format('Y-m-d'),
                             
                             Textarea::make('notas')
-                                ->label('Notas')
+                                ->label(__('Notes'))
                                 ->rows(2)
-                                ->placeholder('Motivo de la asignación, condiciones especiales, etc.')
+                                ->placeholder(__('Reason for assignment, special conditions, etc.'))
                                 ->maxLength(500),
                         ])
                         ->action(function ($record, array $data) {
@@ -192,9 +201,9 @@ class EquipmentTable
                                 $user = \App\Models\User::find($data['user_id']);
 
                                 Notification::make()
-                                    ->title('Equipo asignado exitosamente')
+                                    ->title(__('Equipment assigned successfully'))
                                     ->success()
-                                    ->body('El equipo ha sido asignado a ' . $user->name)
+                                    ->body(__('The device has been assigned to :user', ['user' => $user->name]))
                                     ->send();
                             } catch (\Exception $e) {
                                 DB::rollBack();
@@ -208,7 +217,7 @@ class EquipmentTable
                     
                     // ACCIÓN: Solicitar Préstamo (solo trabajadores, equipos disponibles)
                     Action::make('solicitar')
-                        ->label('Solicitar Préstamo')
+                        ->label(__('Request Loan'))
                         ->icon('heroicon-o-hand-raised')
                         ->color('primary')
                         ->visible(fn ($record): bool => 
@@ -217,18 +226,18 @@ class EquipmentTable
                         )
                         ->form([
                             Textarea::make('motivo')
-                                ->label('Motivo de la solicitud')
+                                ->label(__('Reason for request'))
                                 ->rows(3)
                                 ->maxLength(500)
-                                ->helperText('Explica por qué necesitas este equipo'),
+                                ->helperText(__('Explain why you need this device')),
                         ])
                         ->action(function ($record, array $data) {
                             // Validar que el equipo esté disponible (no en baja ni en mantenimiento)
                             if ($record->status !== 'disponible') {
                                 Notification::make()
-                                    ->title('Equipo no disponible')
+                                    ->title(__('Device not available'))
                                     ->danger()
-                                    ->body('Este equipo no está disponible para préstamo. Estado actual: ' . $record->status)
+                                    ->body(__('This device is not available for loan. Current status: :status', ['status' => $record->status]))
                                     ->send();
                                 return;
                             }
@@ -241,9 +250,9 @@ class EquipmentTable
 
                             if ($existingSolicitud) {
                                 Notification::make()
-                                    ->title('Solicitud duplicada')
+                                    ->title(__('Duplicate request'))
                                     ->danger()
-                                    ->body('Ya tienes una solicitud ' . $existingSolicitud->status . ' para este equipo.')
+                                    ->body(__('You already have a :status request for this device.', ['status' => $existingSolicitud->status]))
                                     ->send();
                                 return;
                             }
@@ -261,23 +270,23 @@ class EquipmentTable
                                 DB::commit();
 
                                 Notification::make()
-                                    ->title('Solicitud enviada')
+                                    ->title(__('Request sent'))
                                     ->success()
-                                    ->body('Tu solicitud está pendiente de aprobación.')
+                                    ->body(__('Your request is pending approval.'))
                                     ->send();
                             } catch (\Exception $e) {
                                 DB::rollBack();
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('Ocurrió un error al enviar la solicitud. Intente nuevamente.')
+                                    ->body(__('An error occurred while sending the request. Please try again.'))
                                     ->send();
                             }
                         }),
                     
                     // ACCIÓN: Enviar a Mantenimiento (trabajadores y admin)
                     Action::make('mantenimiento')
-                        ->label('Enviar a Mantenimiento')
+                        ->label(__('Send to Maintenance'))
                         ->icon('heroicon-o-wrench-screwdriver')
                         ->color('warning')
                         ->visible(fn ($record): bool => 
@@ -286,11 +295,11 @@ class EquipmentTable
                         )
                         ->form([
                             Textarea::make('descripcion_problema')
-                                ->label('Descripción del problema')
+                                ->label(__('Problem description'))
                                 ->required()
                                 ->rows(3)
                                 ->maxLength(1000)
-                                ->helperText('Describe el problema del equipo'),
+                                ->helperText(__('Describe the device problem')),
                         ])
                         ->action(function ($record, array $data) {
                             DB::beginTransaction();
@@ -330,17 +339,17 @@ class EquipmentTable
                                 DB::commit();
 
                                 Notification::make()
-                                    ->title('Equipo enviado a mantenimiento')
+                                    ->title(__('Device sent to maintenance'))
                                     ->success()
-                                    ->body('El equipo ha sido enviado a mantenimiento.' . 
-                                          ($wasPrestado ? ' El préstamo activo fue finalizado automáticamente.' : ''))
+                                    ->body(__('The device has been sent to maintenance.') . 
+                                          ($wasPrestado ? ' ' . __('The active loan was automatically ended.') : ''))
                                     ->send();
                             } catch (\Exception $e) {
                                 DB::rollBack();
                                 Notification::make()
-                                    ->title('Error')
+                                    ->title(__('Error'))
                                     ->danger()
-                                    ->body('Ocurrió un error al reportar el problema. Intente nuevamente.')
+                                    ->body(__('An error occurred while reporting the problem. Please try again.'))
                                     ->send();
                             }
                         }),

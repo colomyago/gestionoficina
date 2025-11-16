@@ -136,8 +136,8 @@ class SolicitudPrestamoResource extends Resource
                     ->first();
                 
                 if ($existingLoan) {
-                    $statusText = $existingLoan->status === 'pendiente' ? 'solicitud pendiente' : 'préstamo activo';
-                    throw new \Exception("Ya tienes una {$statusText} para este equipo.");
+                    $statusText = $existingLoan->status === 'pendiente' ? __('Pending loan') : __('Active loan');
+                    throw new \Exception(__('You already have a :status for this device.', ['status' => $statusText]));
                 }
             });
     }

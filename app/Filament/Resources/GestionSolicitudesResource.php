@@ -77,7 +77,7 @@ class GestionSolicitudesResource extends Resource
                     ->content(fn ($record) => $record->user->name ?? 'N/A'),
 
                 Placeholder::make('equipment.name')
-                    ->label(__('Applicant')) //Equipo   
+                    ->label(__('Device')) //Equipo   
                     ->content(fn ($record) => $record->equipment->name ?? 'N/A'),
 
                 Placeholder::make('motivo')
@@ -96,10 +96,10 @@ class GestionSolicitudesResource extends Resource
                 Select::make('status')
                     ->label(__('Status')) //Estado
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'rechazado' => 'Rechazado',
-                        'activo' => 'Activo',
-                        'devuelto' => 'Devuelto',
+                        'pendiente' => __('Pending'),
+                        'rechazado' => __('Rejected'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
                     ])
                     ->required(),
 
@@ -132,10 +132,18 @@ class GestionSolicitudesResource extends Resource
 
                 TextColumn::make('equipment.codigo')
                     ->label(__('Code')) //Còdigo
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 BadgeColumn::make('status')
                     ->label(__('Status')) //Estado
+                    ->icon(fn (string $state): string => match ($state) {
+                        'pendiente' => 'heroicon-o-clock',
+                        'rechazado' => 'heroicon-o-x-circle',
+                        'activo' => 'heroicon-o-check-circle',
+                        'devuelto' => 'heroicon-o-arrow-uturn-left',
+                        default => 'heroicon-o-question-mark-circle',
+                    })
                     ->colors([
                         'warning' => 'pendiente',
                         'danger' => 'rechazado',
@@ -143,12 +151,13 @@ class GestionSolicitudesResource extends Resource
                         'secondary' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pendiente' => 'Pendiente',
-                        'rechazado' => 'Rechazado',
-                        'activo' => 'Activo',
-                        'devuelto' => 'Devuelto',
+                        'pendiente' => __('Pending'),
+                        'rechazado' => __('Rejected'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
                         default => $state,
-                    }),
+                    })
+                    ->tooltip(__('Loan request status')),
 
                 TextColumn::make('fecha_solicitud')
                     ->label(__('Request Date')) //Fecha de Solicitud
@@ -158,33 +167,43 @@ class GestionSolicitudesResource extends Resource
                 TextColumn::make('fecha_prestamo')
                     ->label(__('D. Loan')) //F. Préstamo'
                     ->dateTime('d/m/Y H:i')
-                    ->placeholder('N/A')
-                    ->tooltip('Fecha y hora de aprobación'),
+                    ->placeholder('-')
+                    ->tooltip(__('Date and time the loan was approved'))
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('fecha_devolucion')
                     ->label(__('Estimated Dev. Date')) //'F. Dev. Estimada
                     ->date('d/m/Y')
-                    ->placeholder('N/A'),
+                    ->placeholder('-')
+                    ->tooltip(__('Estimated date for returning the device'))
+                    ->color(fn ($record) => 
+                        $record->fecha_devolucion && $record->fecha_devolucion->isPast() && $record->status === 'activo'
+                            ? 'danger'
+                            : 'gray'
+                    ),
 
                 TextColumn::make('fecha_devolucion_real')
                     ->label(__('Real Dev. Date')) //F. Dev. Real
                     ->date('d/m/Y')
                     ->placeholder('-')
-                    ->color(fn ($record) => $record->fecha_devolucion_real ? 'success' : 'gray'),
+                    ->tooltip(__('Date when the device was returned'))
+                    ->color(fn ($record) => $record->fecha_devolucion_real ? 'success' : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('motivo')
                     ->label(__('Reason'))// Motivo
                     ->limit(30)
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->label(__('Status'))// Estado
                     ->options([
-                        'pendiente' => 'Pendiente',
-                        'rechazado' => 'Rechazado',
-                        'activo' => 'Activo',
-                        'devuelto' => 'Devuelto',
+                        'pendiente' => __('Pending'),
+                        'rechazado' => __('Rejected'),
+                        'activo' => __('Active'),
+                        'devuelto' => __('Returned'),
                     ])
                     ->default('pendiente'),
             ])
@@ -203,26 +222,26 @@ class GestionSolicitudesResource extends Resource
                         ->form([
                             Placeholder::make('motivo_original')
                                 ->label(__('Solicitation reason')) //Motivo de la Solicitud
-                                ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                                ->content(fn (Loan $record): string => $record->motivo ?? __('No reason provided'))
                                 ->columnSpanFull(),
                             
                             Placeholder::make('info_fecha_prestamo')
                                 ->label(__('Date and time of loan')) //Fecha y Hora de Préstamo
-                                ->content('Se registrará automáticamente al aprobar')
-                                ->helperText('El sistema registrará la fecha y hora exacta de aprobación'),
+                                ->content(__('Will be registered automatically upon approval'))
+                                ->helperText(__('The system will record the exact date and time of approval')),
                             
                             Select::make('periodo_prestamo')
-                                ->label('Período de Préstamo')
+                                ->label(__('Loan Period'))
                                 ->options([
-                                    '2' => '2 días',
-                                    '5' => '5 días (1 semana laboral)',
-                                    '10' => '10 días',
-                                    '15' => '15 días (2 semanas)',
-                                    '21' => '3 semanas',
-                                    '30' => '30 días (1 mes)',
-                                    '45' => '45 días',
-                                    '90' => '90 días (3 meses)',
-                                    'custom' => 'Fecha personalizada...',
+                                    '2' => __('2 days'),
+                                    '5' => __('5 days (1 work week)'),
+                                    '10' => __('10 days'),
+                                    '15' => __('15 days (2 weeks)'),
+                                    '21' => __('3 weeks'),
+                                    '30' => __('30 days (1 month)'),
+                                    '45' => __('45 days'),
+                                    '90' => __('90 days (3 months)'),
+                                    'custom' => __('Custom date...'),
                                 ])
                                 ->default('10')
                                 ->required()
@@ -234,11 +253,11 @@ class GestionSolicitudesResource extends Resource
                                 }),
                             
                             DatePicker::make('fecha_devolucion')
-                                ->label('Fecha Exacta')
+                                ->label(__('Exact Date'))
                                 ->minDate(now()->addDay())
                                 ->required()
                                 ->visible(fn ($get) => $get('periodo_prestamo') === 'custom')
-                                ->helperText('Selecciona una fecha específica')
+                                ->helperText(__('Select a specific date'))
                                 ->default(now()->addWeek())
                                 ->native(false)
                                 ->displayFormat('d/m/Y')
@@ -247,7 +266,7 @@ class GestionSolicitudesResource extends Resource
                             Textarea::make('notas')
                                 ->label(__('Admin notes')) //Notas del admin
                                 ->rows(2)
-                                ->placeholder('Condiciones especiales, observaciones, etc.')
+                                ->placeholder(__('Special conditions, observations, etc.'))
                                 ->columnSpanFull(),
                         ])
                         ->action(function (Loan $record, array $data) {
@@ -335,19 +354,21 @@ class GestionSolicitudesResource extends Resource
                         ->visible(fn (Loan $record): bool => $record->status === 'pendiente')
                         ->requiresConfirmation()
                         ->modalDescription(fn (Loan $record): string => 
-                            'Vas a rechazar la solicitud de ' . $record->user->name . 
-                            ' para el equipo ' . $record->equipment->name)
+                            __('You are about to reject the request from :user for the device :device', [
+                                'user' => $record->user->name,
+                                'device' => $record->equipment->name
+                            ]))
                         ->form([
                             Placeholder::make('motivo_original')
                                 ->label(__('Solicitation reason')) //Motivo de la Solicitud
-                                ->content(fn (Loan $record): string => $record->motivo ?? 'Sin motivo')
+                                ->content(fn (Loan $record): string => $record->motivo ?? __('No reason provided'))
                                 ->columnSpanFull(),
                             
                             Textarea::make('notas')
                                 ->label(__('Reason')) //Motivo del Rechazo
                                 ->required()
                                 ->rows(3)
-                                ->placeholder('Explica por qué se rechaza esta solicitud')
+                                ->placeholder(__('Explain why this request is being rejected'))
                                 ->columnSpanFull(),
                         ])
                         ->action(function (Loan $record, array $data) {
