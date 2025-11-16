@@ -252,7 +252,22 @@ class SolicitudPrestamoResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            $activeLoans = $records->filter(function ($loan) {
+                                return $loan->status === 'activo';
+                            });
+
+                            if ($activeLoans->isNotEmpty()) {
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('Cannot delete active loans. Please return the devices first.'))
+                                    ->send();
+                                
+                                return false;
+                            }
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

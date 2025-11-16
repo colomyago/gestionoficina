@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use App\Models\Equipment;
 use App\Models\Loan;
+use Illuminate\Support\Facades\DB;
 
 class UsersTable
 {
@@ -144,6 +145,16 @@ class UsersTable
                             $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
                         }
                         
+                        // Validar fecha custom
+                        if (!isset($data['fecha_devolucion']) || empty($data['fecha_devolucion'])) {
+                            Notification::make()
+                                ->title(__('Error'))
+                                ->danger()
+                                ->body(__('Return date is required.'))
+                                ->send();
+                            return;
+                        }
+
                         $equipment = Equipment::find($data['equipment_id']);
                         
                         // Verificar disponibilidad
@@ -156,31 +167,50 @@ class UsersTable
                             return;
                         }
 
-                        // Crear el préstamo
-                        Loan::create([
-                            'equipment_id' => $data['equipment_id'],
-                            'user_id' => $record->id,
-                            'assigned_by' => Auth::id(),
-                            'status' => 'activo',
-                            'fecha_solicitud' => now(),
-                            'fecha_prestamo' => now(),
-                            'fecha_devolucion' => $data['fecha_devolucion'],
-                            'motivo' => __('Direct assignment by administrator'),
-                            'notas' => $data['notas'] ?? null,
-                        ]);
+                        // Validar límites usando el servicio
+                        $validationService = app(\App\Services\LoanValidationService::class);
+                        
+                        if (!$validationService->canLoanEquipment($record, $equipment)) {
+                            return; // El servicio ya envía la notificación
+                        }
 
-                        // Actualizar el equipo
-                        $equipment->update([
-                            'status' => 'prestado',
-                            'user_id' => $record->id,
-                        ]);
+                        DB::beginTransaction();
+                        try {
+                            // Crear el préstamo
+                            Loan::create([
+                                'equipment_id' => $data['equipment_id'],
+                                'user_id' => $record->id,
+                                'assigned_by' => Auth::id(),
+                                'status' => 'activo',
+                                'fecha_solicitud' => now(),
+                                'fecha_prestamo' => now(),
+                                'fecha_devolucion' => $data['fecha_devolucion'],
+                                'motivo' => __('Direct assignment by administrator'),
+                                'notas' => $data['notas'] ?? null,
+                            ]);
 
-                        Notification::make()
-                            ->title(__('Device assigned successfully'))
-                            ->success()
-                            ->body($equipment->name . ' ' . __('has been assigned to') . ' ' . $record->name)
-                            ->send();
-                    }),
+                            // Actualizar el equipo
+                            $equipment->update([
+                                'status' => 'prestado',
+                                'user_id' => $record->id,
+                            ]);
+
+                            DB::commit();
+
+                            Notification::make()
+                                ->title(__('Device assigned'))
+                                ->success()
+                                ->body(__('The device') . ' ' . $equipment->name . ' ' . __('has been assigned to') . ' ' . $record->name)
+                                ->send();
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Notification::make()
+                                ->title(__('Error'))
+                                ->danger()
+                                ->body(__('An error occurred while assigning the device. Please try again.'))
+                                ->send();
+                        }
+                    })
                 ])
             ])
             ->toolbarActions([

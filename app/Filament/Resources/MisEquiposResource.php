@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use BackedEnum;
@@ -241,23 +242,35 @@ class MisEquiposResource extends Resource
                                 return;
                             }
 
-                            // Actualizar el préstamo
-                            $activeLoan->update([
-                                'status' => 'devuelto',
-                                'fecha_devolucion_real' => now(),
-                            ]);
+                            DB::beginTransaction();
+                            try {
+                                // Actualizar el préstamo
+                                $activeLoan->update([
+                                    'status' => 'devuelto',
+                                    'fecha_devolucion_real' => now(),
+                                ]);
 
-                            // Actualizar el equipo
-                            $record->update([
-                                'status' => 'disponible',
-                                'user_id' => null,
-                            ]);
+                                // Actualizar el equipo
+                                $record->update([
+                                    'status' => 'disponible',
+                                    'user_id' => null,
+                                ]);
 
-                            Notification::make()
-                                ->title(__('Device returned'))
-                                ->success()
-                                ->body(__('The device has been marked as available.'))
-                                ->send();
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title(__('Device returned'))
+                                    ->success()
+                                    ->body(__('The device has been marked as available.'))
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('An error occurred while returning the device. Please try again.'))
+                                    ->send();
+                            }
                         }),
 
                     // ACCIÓN: Reportar problema (solo si está prestado, no en mantenimiento)
@@ -276,43 +289,55 @@ class MisEquiposResource extends Resource
                                 ->placeholder(__('Example: The screen does not turn on, the keyboard does not respond, etc.')),
                         ])
                         ->action(function ($record, array $data) {
-                            // Buscar el préstamo activo
-                            $activeLoan = Loan::where('equipment_id', $record->id)
-                                ->where('user_id', Auth::id())
-                                ->where('status', 'activo')
-                                ->first();
+                            DB::beginTransaction();
+                            try {
+                                // Buscar el préstamo activo
+                                $activeLoan = Loan::where('equipment_id', $record->id)
+                                    ->where('user_id', Auth::id())
+                                    ->where('status', 'activo')
+                                    ->first();
 
-                            if ($activeLoan) {
-                                // Finalizar el préstamo
-                                $activeLoan->update([
-                                    'status' => 'devuelto',
-                                    'fecha_devolucion_real' => now(),
-                                    'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') .
-                                               'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
-                                               $data['descripcion_problema']
+                                if ($activeLoan) {
+                                    // Finalizar el préstamo
+                                    $activeLoan->update([
+                                        'status' => 'devuelto',
+                                        'fecha_devolucion_real' => now(),
+                                        'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') .
+                                                   'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
+                                                   $data['descripcion_problema']
+                                    ]);
+                                }
+
+                                // Crear solicitud de mantenimiento
+                                MaintenanceRequest::create([
+                                    'equipment_id' => $record->id,
+                                    'requested_by' => Auth::id(),
+                                    'status' => 'pendiente',
+                                    'descripcion_problema' => $data['descripcion_problema'],
+                                    'fecha_solicitud' => now(),
                                 ]);
+
+                                // Actualizar el equipo
+                                $record->update([
+                                    'status' => 'mantenimiento',
+                                    'user_id' => null,
+                                ]);
+
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title(__('Problem reported'))
+                                    ->success()
+                                    ->body(__('The device has been sent to maintenance. Thank you for reporting the problem.'))
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('An error occurred while reporting the problem. Please try again.'))
+                                    ->send();
                             }
-
-                            // Crear solicitud de mantenimiento
-                            MaintenanceRequest::create([
-                                'equipment_id' => $record->id,
-                                'requested_by' => Auth::id(),
-                                'status' => 'pendiente',
-                                'descripcion_problema' => $data['descripcion_problema'],
-                                'fecha_solicitud' => now(),
-                            ]);
-
-                            // Actualizar el equipo
-                            $record->update([
-                                'status' => 'mantenimiento',
-                                'user_id' => null,
-                            ]);
-
-                            Notification::make()
-                                ->title(__('Problem reported'))
-                                ->success()
-                                ->body(__('The device has been sent to maintenance. Thank you for reporting the problem.'))
-                                ->send();
                         }),
                 ])
             ])

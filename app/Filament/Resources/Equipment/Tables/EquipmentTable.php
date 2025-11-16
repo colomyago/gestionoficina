@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use App\Models\Loan;
+use Illuminate\Support\Facades\DB;
 use App\Models\MaintenanceRequest;
 
 class EquipmentTable
@@ -132,37 +133,77 @@ class EquipmentTable
                                 ->maxLength(500),
                         ])
                         ->action(function ($record, array $data) {
+                            // Validar disponibilidad
+                            if ($record->status !== 'disponible') {
+                                Notification::make()
+                                    ->title(__('Device not available'))
+                                    ->danger()
+                                    ->body(__('The selected device is no longer available.'))
+                                    ->send();
+                                return;
+                            }
+
                             // Calcular fecha de devolución basada en el período o fecha custom
                             if (isset($data['periodo_prestamo']) && $data['periodo_prestamo'] !== 'custom' && is_numeric($data['periodo_prestamo'])) {
                                 $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
                             }
                             
-                            // Crear el préstamo directamente como activo
-                            $loan = Loan::create([
-                                'equipment_id' => $record->id,
-                                'user_id' => $data['user_id'],
-                                'assigned_by' => Auth::id(),
-                                'status' => 'activo',
-                                'fecha_solicitud' => now(),
-                                'fecha_prestamo' => now(),
-                                'fecha_devolucion' => $data['fecha_devolucion'],
-                                'motivo' => 'Asignación directa por administrador',
-                                'notas' => $data['notas'] ?? null,
-                            ]);
+                            // Validar fecha custom
+                            if (!isset($data['fecha_devolucion']) || empty($data['fecha_devolucion'])) {
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('Return date is required.'))
+                                    ->send();
+                                return;
+                            }
 
-                            // Actualizar el equipo
-                            $record->update([
-                                'status' => 'prestado',
-                                'user_id' => $data['user_id'],
-                            ]);
-
+                            // Validar límites usando el servicio
+                            $validationService = app(\App\Services\LoanValidationService::class);
                             $user = \App\Models\User::find($data['user_id']);
+                            
+                            if (!$validationService->canLoanEquipment($user, $record)) {
+                                return; // El servicio ya envía la notificación
+                            }
 
-                            Notification::make()
-                                ->title('Equipo asignado exitosamente')
-                                ->success()
-                                ->body('El equipo ha sido asignado a ' . $user->name)
-                                ->send();
+                            DB::beginTransaction();
+                            try {
+                                // Crear el préstamo directamente como activo
+                                $loan = Loan::create([
+                                    'equipment_id' => $record->id,
+                                    'user_id' => $data['user_id'],
+                                    'assigned_by' => Auth::id(),
+                                    'status' => 'activo',
+                                    'fecha_solicitud' => now(),
+                                    'fecha_prestamo' => now(),
+                                    'fecha_devolucion' => $data['fecha_devolucion'],
+                                    'motivo' => 'Asignación directa por administrador',
+                                    'notas' => $data['notas'] ?? null,
+                                ]);
+
+                                // Actualizar el equipo
+                                $record->update([
+                                    'status' => 'prestado',
+                                    'user_id' => $data['user_id'],
+                                ]);
+
+                                DB::commit();
+
+                                $user = \App\Models\User::find($data['user_id']);
+
+                                Notification::make()
+                                    ->title('Equipo asignado exitosamente')
+                                    ->success()
+                                    ->body('El equipo ha sido asignado a ' . $user->name)
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('An error occurred while assigning the device. Please try again.'))
+                                    ->send();
+                            }
                         }),
                     
                     // ACCIÓN: Solicitar Préstamo (solo trabajadores, equipos disponibles)
@@ -282,7 +323,24 @@ class EquipmentTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => Auth::user()->isAdmin()),
+                        ->visible(fn (): bool => Auth::user()->isAdmin())
+                        ->before(function ($records) {
+                            $equipmentWithLoans = $records->filter(function ($equipment) {
+                                return Loan::where('equipment_id', $equipment->id)
+                                    ->where('status', 'activo')
+                                    ->exists();
+                            });
+
+                            if ($equipmentWithLoans->isNotEmpty()) {
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('Cannot delete devices with active loans. Please return them first.'))
+                                    ->send();
+                                
+                                return false;
+                            }
+                        }),
                 ]),
             ]);
     }
