@@ -52,7 +52,7 @@ class AuditLog extends Model
         ?array $newValues = null,
         ?string $description = null
     ): self {
-        $user = $user ?? auth()->user();
+        $user = $user ?? \Illuminate\Support\Facades\Auth::user();
         
         return self::create([
             'event' => $event,
