@@ -45,9 +45,11 @@ class RealisticDataSeeder extends Seeder
         
         // Limpiar datos anteriores para evitar duplicados
         $this->command->warn('⚠️  Limpiando datos anteriores...');
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         \App\Models\Loan::truncate();
         \App\Models\MaintenanceRequest::truncate();
         \App\Models\Equipment::truncate();
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         
         $equiposDisponibles = [
             // Computadoras (4)
