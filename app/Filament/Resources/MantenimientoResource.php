@@ -40,7 +40,8 @@ class MantenimientoResource extends Resource
         
         // Mostrar solicitudes pendientes de mantenimiento
         if ($user && ($user->isMantenimiento() || $user->isAdmin())) {
-            return (string) MaintenanceRequest::where('status', 'pendiente')->count();
+            $count = MaintenanceRequest::where('status', 'pendiente')->count();
+            return $count > 0 ? (string) $count : null;
         }
         
         return null;

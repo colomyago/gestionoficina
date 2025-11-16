@@ -47,7 +47,8 @@ class GestionSolicitudesResource extends Resource
         
         // Admin ve todas las solicitudes pendientes
         if ($user && $user->isAdmin()) {
-            return (string) Loan::pending()->count();
+            $count = Loan::pending()->count();
+            return $count > 0 ? (string) $count : null;
         }
         
         return null;

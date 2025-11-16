@@ -42,14 +42,16 @@ class SolicitudPrestamoResource extends Resource
         
         // Si es trabajador, muestra solo sus pendientes
         if ($user && $user->isTrabajador()) {
-            return (string) Loan::pending()
+            $count = Loan::pending()
                 ->where('user_id', $user->id)
                 ->count();
+            return $count > 0 ? (string) $count : null;
         }
         
         // Si es admin, muestra todos los pendientes
         if ($user && $user->isAdmin()) {
-            return (string) Loan::pending()->count();
+            $count = Loan::pending()->count();
+            return $count > 0 ? (string) $count : null;
         }
         
         return null;

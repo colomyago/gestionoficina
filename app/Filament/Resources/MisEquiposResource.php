@@ -39,9 +39,10 @@ class MisEquiposResource extends Resource
         
         // Mostrar equipos activos del trabajador
         if ($user && $user->isTrabajador()) {
-            return (string) Loan::active()
+            $count = Loan::active()
                 ->where('user_id', $user->id)
                 ->count();
+            return $count > 0 ? (string) $count : null;
         }
         
         return null;
