@@ -27,24 +27,26 @@ class CreateSolicitudPrestamo extends CreateRecord
             $this->halt();
         }
 
-        // Validar que no exista solicitud duplicada
+        // Si no viene user_id (trabajador), usar el usuario actual
+        if (!isset($data['user_id']) || !Auth::user()->isAdmin()) {
+            $data['user_id'] = Auth::id();
+        }
+        
+        // Validar que no exista solicitud duplicada para el usuario final
+        $userId = $data['user_id'];
         $existingLoan = Loan::where('equipment_id', $data['equipment_id'])
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->whereIn('status', ['pendiente', 'activo'])
             ->first();
 
         if ($existingLoan) {
+            $statusText = $existingLoan->status === 'pendiente' ? 'pendiente' : 'activa';
             Notification::make()
                 ->title('Solicitud duplicada')
                 ->danger()
-                ->body('Ya tienes una solicitud ' . $existingLoan->status . ' para este equipo.')
+                ->body("Ya existe una solicitud {$statusText} para este equipo.")
                 ->send();
             $this->halt();
-        }
-
-        // Si no viene user_id (trabajador), usar el usuario actual
-        if (!isset($data['user_id']) || !Auth::user()->isAdmin()) {
-            $data['user_id'] = Auth::id();
         }
         
         $data['status'] = 'pendiente';
