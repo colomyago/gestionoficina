@@ -28,6 +28,7 @@ use App\Models\SystemSetting;
 use App\Services\LoanValidationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\AuditLog;
 
 class GestionSolicitudesResource extends Resource
 {
@@ -119,6 +120,7 @@ class GestionSolicitudesResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['user', 'equipment', 'assignedBy']))
             ->columns([
                 TextColumn::make('user.name')
                     ->label(__('Applicant')) //Solicitante
@@ -317,6 +319,16 @@ class GestionSolicitudesResource extends Resource
                                     'user_id' => $record->user_id,
                                 ]);
 
+                                // Registrar auditoría
+                                AuditLog::log(
+                                    AuditLog::LOAN_APPROVED,
+                                    $record,
+                                    Auth::user(),
+                                    ['status' => 'pendiente'],
+                                    ['status' => 'activo', 'fecha_prestamo' => $fechaPrestamoAhora->toDateTimeString()],
+                                    "Préstamo aprobado para {$record->user->name}"
+                                );
+
                                 DB::commit();
                                 
                                 Notification::make()
@@ -376,14 +388,22 @@ class GestionSolicitudesResource extends Resource
                                     return;
                                 }
                                 
-                                $record->update([
-                                    'status' => 'rechazado',
-                                    'notas' => $data['notas'],
-                                ]);
+                            $record->update([
+                                'status' => 'rechazado',
+                                'notas' => $data['notas'],
+                            ]);
 
-                                DB::commit();
+                                // Registrar auditoría
+                                AuditLog::log(
+                                    AuditLog::LOAN_REJECTED,
+                                    $record,
+                                    Auth::user(),
+                                    ['status' => 'pendiente'],
+                                    ['status' => 'rechazado', 'notas' => $data['notas']],
+                                    "Préstamo rechazado: {$data['notas']}"
+                                );
 
-                                Notification::make()
+                                DB::commit();                                Notification::make()
                                     ->title('Solicitud rechazada')
                                     ->danger()
                                     ->body('Se ha notificado al usuario sobre el rechazo.')

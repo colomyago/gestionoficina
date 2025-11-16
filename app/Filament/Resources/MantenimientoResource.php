@@ -128,6 +128,7 @@ class MantenimientoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['equipment', 'requestedBy', 'assignedTo']))
             ->columns([
                 TextColumn::make('equipment.name')
                     ->label(__('Device')) // Equipo

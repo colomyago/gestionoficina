@@ -19,12 +19,14 @@ use Filament\Notifications\Notification;
 use App\Models\Equipment;
 use App\Models\Loan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['role', 'activeLoans']))
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Name'))

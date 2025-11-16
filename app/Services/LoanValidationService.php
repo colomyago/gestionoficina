@@ -91,36 +91,10 @@ class LoanValidationService
 
     /**
      * Validar fecha de devolución
+     * @deprecated Use DateValidationService::validateReturnDate() instead
      */
     public static function validateReturnDate($date): array
     {
-        if (!$date) {
-            return [
-                'valid' => false,
-                'message' => 'La fecha de devolución es requerida'
-            ];
-        }
-
-        $returnDate = \Carbon\Carbon::parse($date);
-        $today = \Carbon\Carbon::today();
-        
-        if ($returnDate->startOfDay()->lt($today)) {
-            return [
-                'valid' => false,
-                'message' => 'La fecha de devolución no puede estar en el pasado'
-            ];
-        }
-
-        if ($returnDate->isToday()) {
-            return [
-                'valid' => false,
-                'message' => 'La fecha de devolución debe ser al menos mañana'
-            ];
-        }
-
-        return [
-            'valid' => true,
-            'message' => 'Fecha válida'
-        ];
+        return \App\Services\DateValidationService::validateReturnDate($date);
     }
 }

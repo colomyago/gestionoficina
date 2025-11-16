@@ -26,6 +26,7 @@ use BackedEnum;
 use Filament\Support\Icons\Heroicon;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\DB;
+use App\Models\AuditLog;
 
 class SolicitudPrestamoResource extends Resource
 {
@@ -146,6 +147,9 @@ class SolicitudPrestamoResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
+                // Eager loading
+                $query->with(['user', 'equipment', 'assignedBy']);
+                
                 // Admin ve todas las solicitudes, trabajadores solo las suyas
                 if (!Auth::user()->isAdmin()) {
                     return $query->where('user_id', Auth::id());
@@ -233,6 +237,16 @@ class SolicitudPrestamoResource extends Resource
                                 'status' => 'disponible',
                                 'user_id' => null,
                             ]);
+
+                            // Registrar auditoría
+                            AuditLog::log(
+                                AuditLog::LOAN_RETURNED,
+                                $record,
+                                Auth::user(),
+                                ['status' => 'activo'],
+                                ['status' => 'devuelto', 'fecha_devolucion_real' => now()->toDateString()],
+                                "Equipo devuelto por {$record->user->name}"
+                            );
 
                             DB::commit();
                             

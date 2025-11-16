@@ -23,12 +23,14 @@ use Filament\Notifications\Notification;
 use App\Models\Loan;
 use Illuminate\Support\Facades\DB;
 use App\Models\MaintenanceRequest;
+use App\Models\AuditLog;
 
 class EquipmentTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['user', 'activeLoan.user']))
             ->columns([
                 TextColumn::make('codigo')
                     ->label(__('Code'))
@@ -346,6 +348,16 @@ class EquipmentTable
                                     'status' => 'mantenimiento',
                                     'user_id' => null,
                                 ]);
+
+                                // Registrar auditoría
+                                AuditLog::log(
+                                    AuditLog::EQUIPMENT_TO_MAINTENANCE,
+                                    $record,
+                                    Auth::user(),
+                                    ['status' => $wasPrestado ? 'prestado' : 'disponible'],
+                                    ['status' => 'mantenimiento'],
+                                    "Equipo enviado a mantenimiento: {$data['descripcion_problema']}"
+                                );
 
                                 DB::commit();
 
