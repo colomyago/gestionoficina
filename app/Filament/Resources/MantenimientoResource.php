@@ -202,15 +202,27 @@ class MantenimientoResource extends Resource
                         )
                         ->requiresConfirmation()
                         ->action(function (MaintenanceRequest $record) {
-                            $record->update([
-                                'status' => 'en_proceso',
-                                'assigned_to' => Auth::id(),
-                            ]);
+                            DB::beginTransaction();
+                            try {
+                                $record->update([
+                                    'status' => 'en_proceso',
+                                    'assigned_to' => Auth::id(),
+                                ]);
 
-                            Notification::make()
-                                ->title('Solicitud tomada')
-                                ->success()
-                                ->send();
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Solicitud tomada')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Ocurrió un error al tomar la tarea. Intente nuevamente.')
+                                    ->send();
+                            }
                         }),
 
                     Action::make('reparar')
@@ -229,22 +241,34 @@ class MantenimientoResource extends Resource
                                 ->rows(3),
                         ])
                         ->action(function (MaintenanceRequest $record, array $data) {
-                            $record->update([
-                                'status' => 'completado',
-                                'resultado' => 'reparado',
-                                'solucion' => $data['solucion'],
-                                'fecha_completado' => now(),
-                            ]);
+                            DB::beginTransaction();
+                            try {
+                                $record->update([
+                                    'status' => 'completado',
+                                    'resultado' => 'reparado',
+                                    'solucion' => $data['solucion'],
+                                    'fecha_completado' => now(),
+                                ]);
 
-                            // Cambiar el equipo a disponible
-                            $record->equipment->update([
-                                'status' => 'disponible',
-                            ]);
+                                // Cambiar el equipo a disponible
+                                $record->equipment->update([
+                                    'status' => 'disponible',
+                                ]);
 
-                            Notification::make()
-                                ->title('Equipo reparado y disponible')
-                                ->success()
-                                ->send();
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Equipo reparado y disponible')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Ocurrió un error al marcar como reparado. Intente nuevamente.')
+                                    ->send();
+                            }
                         }),
 
                     Action::make('dar_de_baja')

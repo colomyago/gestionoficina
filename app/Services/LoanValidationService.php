@@ -11,10 +11,20 @@ class LoanValidationService
 {
     /**
      * Validar que un equipo pueda ser prestado
+     * @param \App\Models\User|int $user Usuario o ID del usuario
+     * @param \App\Models\Equipment|int $equipment Equipo o ID del equipo
+     * @param int|null $excludeLoanId ID del préstamo a excluir (para ediciones)
      */
-    public static function canLoanEquipment(int $equipmentId, int $userId, ?int $excludeLoanId = null): array
+    public static function canLoanEquipment($user, $equipment, ?int $excludeLoanId = null): array
     {
-        $equipment = Equipment::find($equipmentId);
+        // Normalizar a IDs si se reciben objetos
+        $userId = is_object($user) ? $user->id : $user;
+        $equipmentId = is_object($equipment) ? $equipment->id : $equipment;
+        
+        // Obtener el equipo si no es un objeto
+        if (!is_object($equipment)) {
+            $equipment = Equipment::find($equipmentId);
+        }
         
         if (!$equipment) {
             return [
@@ -92,8 +102,9 @@ class LoanValidationService
         }
 
         $returnDate = \Carbon\Carbon::parse($date);
+        $today = \Carbon\Carbon::today();
         
-        if ($returnDate->isPast()) {
+        if ($returnDate->startOfDay()->lt($today)) {
             return [
                 'valid' => false,
                 'message' => 'La fecha de devolución no puede estar en el pasado'

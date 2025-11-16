@@ -276,10 +276,10 @@ class GestionSolicitudesResource extends Resource
                                     return;
                                 }
                                 
-                                // Validar que el préstamo sea posible
+                                // Validar que el préstamo sea posible (ahora acepta IDs u objetos)
                                 $validation = LoanValidationService::canLoanEquipment(
-                                    $record->equipment_id,
-                                    $record->user_id,
+                                    $record->user,
+                                    $record->equipment,
                                     $record->id
                                 );
                                 
@@ -351,16 +351,42 @@ class GestionSolicitudesResource extends Resource
                                 ->columnSpanFull(),
                         ])
                         ->action(function (Loan $record, array $data) {
-                            $record->update([
-                                'status' => 'rechazado',
-                                'notas' => $data['notas'],
-                            ]);
+                            DB::beginTransaction();
+                            try {
+                                // Recargar con bloqueo para evitar race conditions
+                                $record = Loan::lockForUpdate()->findOrFail($record->id);
+                                
+                                // Verificar que aún esté pendiente
+                                if ($record->status !== 'pendiente') {
+                                    DB::rollBack();
+                                    Notification::make()
+                                        ->title(__('Error'))
+                                        ->danger()
+                                        ->body(__('This request is no longer pending.'))
+                                        ->send();
+                                    return;
+                                }
+                                
+                                $record->update([
+                                    'status' => 'rechazado',
+                                    'notas' => $data['notas'],
+                                ]);
 
-                            Notification::make()
-                                ->title('Solicitud rechazada')
-                                ->danger()
-                                ->body('Se ha notificado al usuario sobre el rechazo.')
-                                ->send();
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Solicitud rechazada')
+                                    ->danger()
+                                    ->body('Se ha notificado al usuario sobre el rechazo.')
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title(__('Error'))
+                                    ->danger()
+                                    ->body(__('An error occurred while rejecting the request. Please try again.'))
+                                    ->send();
+                            }
                         }),
 
                     EditAction::make()

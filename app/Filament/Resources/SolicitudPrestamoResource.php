@@ -25,6 +25,7 @@ use Filament\Notifications\Notification;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\DB;
 
 class SolicitudPrestamoResource extends Resource
 {
@@ -230,21 +231,33 @@ class SolicitudPrestamoResource extends Resource
                     ->visible(fn (Loan $record): bool => $record->status === 'activo')
                     ->requiresConfirmation()
                     ->action(function (Loan $record) {
-                        $record->update([
-                            'status' => 'devuelto',
-                            'fecha_devolucion_real' => now(),
-                        ]);
-                        
-                        $record->equipment->update([
-                            'status' => 'disponible',
-                            'user_id' => null,
-                        ]);
-                        
-                        Notification::make()
-                            ->title(__('Device returned successfully'))
-                            ->success()
-                            ->body(__('The device has been marked as available.'))
-                            ->send();
+                        DB::beginTransaction();
+                        try {
+                            $record->update([
+                                'status' => 'devuelto',
+                                'fecha_devolucion_real' => now(),
+                            ]);
+                            
+                            $record->equipment->update([
+                                'status' => 'disponible',
+                                'user_id' => null,
+                            ]);
+
+                            DB::commit();
+                            
+                            Notification::make()
+                                ->title(__('Device returned successfully'))
+                                ->success()
+                                ->body(__('The device has been marked as available.'))
+                                ->send();
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Notification::make()
+                                ->title(__('Error'))
+                                ->danger()
+                                ->body(__('An error occurred while returning the device. Please try again.'))
+                                ->send();
+                        }
                     }),
                 
                 DeleteAction::make()

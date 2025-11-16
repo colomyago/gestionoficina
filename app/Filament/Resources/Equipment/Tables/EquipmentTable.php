@@ -248,19 +248,31 @@ class EquipmentTable
                                 return;
                             }
 
-                            Loan::create([
-                                'equipment_id' => $record->id,
-                                'user_id' => Auth::id(),
-                                'status' => 'pendiente',
-                                'fecha_solicitud' => now(),
-                                'motivo' => $data['motivo'],
-                            ]);
+                            DB::beginTransaction();
+                            try {
+                                Loan::create([
+                                    'equipment_id' => $record->id,
+                                    'user_id' => Auth::id(),
+                                    'status' => 'pendiente',
+                                    'fecha_solicitud' => now(),
+                                    'motivo' => $data['motivo'],
+                                ]);
 
-                            Notification::make()
-                                ->title('Solicitud enviada')
-                                ->success()
-                                ->body('Tu solicitud está pendiente de aprobación.')
-                                ->send();
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Solicitud enviada')
+                                    ->success()
+                                    ->body('Tu solicitud está pendiente de aprobación.')
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Ocurrió un error al enviar la solicitud. Intente nuevamente.')
+                                    ->send();
+                            }
                         }),
                     
                     // ACCIÓN: Enviar a Mantenimiento (trabajadores y admin)
@@ -281,42 +293,56 @@ class EquipmentTable
                                 ->helperText('Describe el problema del equipo'),
                         ])
                         ->action(function ($record, array $data) {
-                            // Si el equipo está prestado, actualizar el loan activo
-                            if ($record->status === 'prestado') {
-                                $activeLoan = Loan::where('equipment_id', $record->id)
-                                    ->where('status', 'activo')
-                                    ->first();
+                            DB::beginTransaction();
+                            try {
+                                $wasPrestado = $record->status === 'prestado';
+                                
+                                // Si el equipo está prestado, actualizar el loan activo
+                                if ($wasPrestado) {
+                                    $activeLoan = Loan::where('equipment_id', $record->id)
+                                        ->where('status', 'activo')
+                                        ->first();
 
-                                if ($activeLoan) {
-                                    $activeLoan->update([
-                                        'status' => 'devuelto',
-                                        'fecha_devolucion_real' => now(),
-                                        'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') . 
-                                                   'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
-                                                   $data['descripcion_problema']
-                                    ]);
+                                    if ($activeLoan) {
+                                        $activeLoan->update([
+                                            'status' => 'devuelto',
+                                            'fecha_devolucion_real' => now(),
+                                            'notas' => ($activeLoan->notas ? $activeLoan->notas . "\n\n" : '') . 
+                                                       'Equipo devuelto automáticamente - Enviado a mantenimiento: ' . 
+                                                       $data['descripcion_problema']
+                                        ]);
+                                    }
                                 }
+
+                                MaintenanceRequest::create([
+                                    'equipment_id' => $record->id,
+                                    'requested_by' => Auth::id(),
+                                    'status' => 'pendiente',
+                                    'descripcion_problema' => $data['descripcion_problema'],
+                                    'fecha_solicitud' => now(),
+                                ]);
+
+                                $record->update([
+                                    'status' => 'mantenimiento',
+                                    'user_id' => null,
+                                ]);
+
+                                DB::commit();
+
+                                Notification::make()
+                                    ->title('Equipo enviado a mantenimiento')
+                                    ->success()
+                                    ->body('El equipo ha sido enviado a mantenimiento.' . 
+                                          ($wasPrestado ? ' El préstamo activo fue finalizado automáticamente.' : ''))
+                                    ->send();
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Ocurrió un error al reportar el problema. Intente nuevamente.')
+                                    ->send();
                             }
-
-                            MaintenanceRequest::create([
-                                'equipment_id' => $record->id,
-                                'requested_by' => Auth::id(),
-                                'status' => 'pendiente',
-                                'descripcion_problema' => $data['descripcion_problema'],
-                                'fecha_solicitud' => now(),
-                            ]);
-
-                            $record->update([
-                                'status' => 'mantenimiento',
-                                'user_id' => null,
-                            ]);
-
-                            Notification::make()
-                                ->title('Equipo enviado a mantenimiento')
-                                ->success()
-                                ->body('El equipo ha sido enviado a mantenimiento.' . 
-                                      ($record->status === 'prestado' ? ' El préstamo activo fue finalizado automáticamente.' : ''))
-                                ->send();
                         }),
                 ])
             ])
