@@ -56,8 +56,8 @@ class SystemSettingResource extends Resource
                     ->label(__('Setting'))
                     ->disabled()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'max_equipments_per_worker' => '🎒 Límite de Equipos por Trabajador',
-                        'days_before_overdue_warning' => '⏰ Días de Advertencia Antes de Vencimiento',
+                        'max_equipments_per_worker' => 'Límite de Equipos por Trabajador',
+                        'days_before_overdue_warning' => 'Días de Advertencia Antes de Vencimiento',
                         default => $state,
                     })
                     ->columnSpanFull(),
@@ -71,8 +71,8 @@ class SystemSettingResource extends Resource
 
                 TextInput::make('value')
                     ->label(fn ($record) => match ($record?->key) {
-                        'max_equipments_per_worker' => '📊 Cantidad Máxima',
-                        'days_before_overdue_warning' => '📅 Cantidad de Días',
+                        'max_equipments_per_worker' => 'Cantidad Máxima',
+                        'days_before_overdue_warning' => 'Cantidad de Días',
                         default => 'Valor',
                     })
                     ->numeric(fn ($record) => $record && $record->type === 'integer')
@@ -81,8 +81,8 @@ class SystemSettingResource extends Resource
                     ->step(1)
                     ->required()
                     ->helperText(fn ($record) => match ($record?->key) {
-                        'max_equipments_per_worker' => '💡 Cantidad máxima de equipos que un trabajador puede tener prestados al mismo tiempo (entre 1 y 50)',
-                        'days_before_overdue_warning' => '💡 Días antes de la fecha de devolución para mostrar advertencias visuales (recomendado: 3-14 días)',
+                        'max_equipments_per_worker' => 'Cantidad máxima de equipos que un trabajador puede tener prestados al mismo tiempo (entre 1 y 50)',
+                        'days_before_overdue_warning' => 'Días antes de la fecha de devolución para mostrar advertencias visuales (recomendado: 3-14 días)',
                         default => 'Ingresa el nuevo valor para esta configuración',
                     })
                     ->suffix(fn ($record) => match ($record?->key) {
