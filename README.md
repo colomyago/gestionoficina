@@ -81,6 +81,7 @@ Tenemos documentación detallada en la carpeta `docs/`:
 
 ### 🔧 Referencia Técnica
 - [Comandos Sail útiles](docs/COMANDOS_SAIL.md) - Referencia rápida de comandos Docker/Sail
+- [Optimizaciones del sistema](docs/OPTIMIZACIONES_SISTEMA.md) - Mejoras de rendimiento implementadas
 - [Proyecto TFI](docs/PROYECTO_TFI.md) - Documentación del trabajo final integrador
 
 ## Cómo funciona
