@@ -155,41 +155,31 @@ class MantenimientoResource extends Resource
 
                 TextColumn::make('descripcion_problema')
                     ->label(__('Problem')) // Problema
-                    ->limit(50)
-                    ->tooltip(function (MaintenanceRequest $record): string {
-                        return $record->descripcion_problema ?? '';
-                    })
+                    ->limit(40)
                     ->searchable()
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 TextColumn::make('assignedTo.name')
                     ->label(__('Assigned to')) // Asignado a
-                    ->placeholder('Sin asignar')
-                    ->sortable(),
+                    ->placeholder('-')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('fecha_solicitud')
                     ->label(__('Request Date')) // Fecha de Solicitud
                     ->dateTime('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                 SelectFilter::make('status')
-                    ->label(__('Status'))
-                    ->options([
-                        'pendiente' => __('Pending'),
-                        'en_proceso' => __('In Progress'),
-                        'completado' => __('Completed'),
-                        'rechazado' => __('Rejected'),
-                    ]),
-
-
                  SelectFilter::make('resultado')
                     ->label(__('Result'))
                     ->options([
-                        'pendiente' => __('Pending'),
                         'reparado' => __('Repaired'),
                         'dado_de_baja' => __('Decommissioned'),
-                    ]),
+                    ])
+                    ->placeholder(__('All results')),
             ])
             ->recordActions([
                 ActionGroup::make([

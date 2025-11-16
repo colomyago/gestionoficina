@@ -230,5 +230,11 @@
     "Special conditions, observations, etc.": "Condiciones especiales, observaciones, etc.",
     "Reject this loan request": "Rechazar esta solicitud de préstamo",
     "You are about to reject the request from :user for the device :device": "Vas a rechazar la solicitud de :user para el equipo :device",
-    "Explain why this request is being rejected": "Explica por qué se rechaza esta solicitud"
+    "Explain why this request is being rejected": "Explica por qué se rechaza esta solicitud",
+    "All statuses": "Todos los estados",
+    "Assigned": "Asignados",
+    "All": "Todos",
+    "Maintenance": "Mantenimiento",
+    "Returned": "Devuelto",
+    "All results": "Todos los resultados"
 }

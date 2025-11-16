@@ -137,18 +137,11 @@ class GestionSolicitudesResource extends Resource
 
                 BadgeColumn::make('status')
                     ->label(__('Status')) //Estado
-                    ->icon(fn (string $state): string => match ($state) {
-                        'pendiente' => 'heroicon-o-clock',
-                        'rechazado' => 'heroicon-o-x-circle',
-                        'activo' => 'heroicon-o-check-circle',
-                        'devuelto' => 'heroicon-o-arrow-uturn-left',
-                        default => 'heroicon-o-question-mark-circle',
-                    })
                     ->colors([
                         'warning' => 'pendiente',
                         'danger' => 'rechazado',
-                        'primary' => 'activo',
-                        'secondary' => 'devuelto',
+                        'success' => 'activo',
+                        'gray' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pendiente' => __('Pending'),
@@ -156,8 +149,7 @@ class GestionSolicitudesResource extends Resource
                         'activo' => __('Active'),
                         'devuelto' => __('Returned'),
                         default => $state,
-                    })
-                    ->tooltip(__('Loan request status')),
+                    }),
 
                 TextColumn::make('fecha_solicitud')
                     ->label(__('Request Date')) //Fecha de Solicitud
@@ -168,27 +160,23 @@ class GestionSolicitudesResource extends Resource
                     ->label(__('D. Loan')) //F. Préstamo'
                     ->dateTime('d/m/Y H:i')
                     ->placeholder('-')
-                    ->tooltip(__('Date and time the loan was approved'))
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('fecha_devolucion')
-                    ->label(__('Estimated Dev. Date')) //'F. Dev. Estimada
+                    ->label(__('Return Date')) //'F. Dev. Estimada
                     ->date('d/m/Y')
                     ->placeholder('-')
-                    ->tooltip(__('Estimated date for returning the device'))
                     ->color(fn ($record) => 
                         $record->fecha_devolucion && $record->fecha_devolucion->isPast() && $record->status === 'activo'
                             ? 'danger'
-                            : 'gray'
+                            : null
                     ),
 
                 TextColumn::make('fecha_devolucion_real')
-                    ->label(__('Real Dev. Date')) //F. Dev. Real
+                    ->label(__('Returned')) //F. Dev. Real
                     ->date('d/m/Y')
                     ->placeholder('-')
-                    ->tooltip(__('Date when the device was returned'))
-                    ->color(fn ($record) => $record->fecha_devolucion_real ? 'success' : 'gray')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('motivo')
                     ->label(__('Reason'))// Motivo

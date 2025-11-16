@@ -6,6 +6,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Table;
 use Filament\Actions\ActionGroup;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -40,17 +43,11 @@ class EquipmentTable
                 TextColumn::make('categoria')
                     ->label(__('Category'))
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                     
                 BadgeColumn::make('status')
                     ->label(__('Status'))
-                    ->icon(fn (string $state): string => match ($state) {
-                        'disponible' => 'heroicon-o-check-circle',
-                        'prestado' => 'heroicon-o-arrow-right-circle',
-                        'mantenimiento' => 'heroicon-o-wrench-screwdriver',
-                        'baja' => 'heroicon-o-x-circle',
-                        default => 'heroicon-o-question-mark-circle',
-                    })
                     ->colors([
                         'success' => 'disponible',
                         'warning' => 'prestado',
@@ -63,18 +60,32 @@ class EquipmentTable
                         'mantenimiento' => __('In Maintenance'),
                         'baja' => __('Decommissioned'),
                         default => $state,
-                    })
-                    ->tooltip(__('Current device status')),
+                    }),
                     
                 TextColumn::make('user.name')
                     ->label(__('User'))
                     ->searchable()
                     ->sortable()
                     ->placeholder(__('Unassigned'))
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('categoria')
+                    ->label(__('Category'))
+                    ->options([
+                        'Computadoras' => __('Computers'),
+                        'Laptops' => __('Laptops'),
+                        'Tablets' => __('Tablets'),
+                        'Monitores' => __('Monitors'),
+                        'Impresoras' => __('Printers'),
+                        'Audio' => __('Audio'),
+                        'Redes' => __('Networks'),
+                        'Almacenamiento' => __('Storage'),
+                        'Periféricos' => __('Peripherals'),
+                        'Proyección' => __('Projection'),
+                        'Otros' => __('Others'),
+                    ])
+                    ->placeholder(__('All categories')),
             ])
             ->recordActions([
                 ActionGroup::make([
@@ -377,6 +388,8 @@ class EquipmentTable
                             }
                         }),
                 ]),
-            ]);
+            ])
+            ->defaultSort('name', 'asc')
+            ->persistFiltersInSession();
     }
 }

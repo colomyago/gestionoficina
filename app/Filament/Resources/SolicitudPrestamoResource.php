@@ -172,8 +172,8 @@ class SolicitudPrestamoResource extends Resource
                     ->colors([
                         'warning' => 'pendiente',
                         'danger' => 'rechazado',
-                        'primary' => 'activo',
-                        'secondary' => 'devuelto',
+                        'success' => 'activo',
+                        'gray' => 'devuelto',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pendiente' => __('Pending'),
@@ -191,8 +191,8 @@ class SolicitudPrestamoResource extends Resource
                 TextColumn::make('fecha_prestamo')
                     ->label(__('Loan Date'))
                     ->dateTime('d/m/Y H:i')
-                    ->placeholder('N/A')
-                    ->tooltip(__('Approval date and time')),
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('fecha_devolucion')
                     ->label(__('Estimated Return'))
@@ -206,22 +206,13 @@ class SolicitudPrestamoResource extends Resource
 
                 TextColumn::make('motivo')
                     ->label(__('Reason'))
-                    ->limit(40)
-                    ->tooltip(function (?Loan $record): ?string {
-                        return $record?->motivo;
-                    })
+                    ->limit(30)
                     ->searchable()
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label(__('Status'))
-                    ->options([
-                        'pendiente' => __('Pending'),
-                        'rechazado' => __('Rejected'),
-                        'activo' => __('Active'),
-                        'devuelto' => __('Returned'),
-                    ]),
+                //
             ])
             ->recordActions([
                 Action::make('devolver')

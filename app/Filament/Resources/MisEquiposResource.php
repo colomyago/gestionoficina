@@ -161,13 +161,13 @@ class MisEquiposResource extends Resource
                 TextColumn::make('codigo')
                     ->label(__('Code'))
                     ->searchable()
-                    ->badge()
-                    ->color('primary'),
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('categoria')
                     ->label(__('Category'))
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 BadgeColumn::make('status')
                     ->label(__('Status'))
@@ -185,28 +185,24 @@ class MisEquiposResource extends Resource
                     ->label(__('Since'))
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('activeLoan.fecha_devolucion')
-                    ->label(__('Estimated Return'))
+                    ->label(__('Return Date'))
                     ->date('d/m/Y')
                     ->sortable()
                     ->color(fn ($record) =>
                         $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast() 
                             ? 'danger'
-                            : 'gray'
-                    )
-                    ->tooltip(fn ($record) =>
-                        $record->activeLoan && $record->activeLoan->fecha_devolucion && $record->activeLoan->fecha_devolucion->isPast()
-                            ? '⚠️ Fecha vencida'
                             : null
                     ),
 
                 TextColumn::make('description')
                     ->label(__('Description'))
-                    ->limit(50)
+                    ->limit(40)
                     ->wrap()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
