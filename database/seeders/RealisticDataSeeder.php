@@ -43,6 +43,12 @@ class RealisticDataSeeder extends Seeder
         // 1. EQUIPOS DISPONIBLES (15 equipos - inventario variado de oficina)
         $this->command->info('💻 Creando equipos disponibles en inventario...');
         
+        // Limpiar datos anteriores para evitar duplicados
+        $this->command->warn('⚠️  Limpiando datos anteriores...');
+        \App\Models\Loan::truncate();
+        \App\Models\MaintenanceRequest::truncate();
+        \App\Models\Equipment::truncate();
+        
         $equiposDisponibles = [
             // Computadoras (4)
             [
