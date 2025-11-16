@@ -2,7 +2,7 @@
 
 ## 📋 Resumen de Optimizaciones Implementadas
 
-Se han implementado **5 mejoras críticas** para optimizar el rendimiento, escalabilidad y trazabilidad del sistema.
+Se han implementado **6 mejoras críticas** para optimizar el rendimiento, escalabilidad, trazabilidad y experiencia de usuario del sistema.
 
 ---
 
@@ -435,6 +435,84 @@ $loan = \App\Models\Loan::first();
 
 ---
 
+## 🖼️ 6. Sistema de Imágenes para Equipos
+
+### **Problema:**
+Los equipos no tenían representación visual, dificultando su identificación rápida.
+
+### **Solución:**
+Sistema completo de upload de imágenes con editor integrado, visualización optimizada y imagen por defecto.
+
+### **Archivos Modificados:**
+- `database/migrations/2025_11_16_000004_add_image_to_equipment_table.php`
+- `app/Models/Equipment.php`
+- `app/Filament/Resources/Equipment/Schemas/EquipmentForm.php`
+- `app/Filament/Resources/Equipment/Tables/EquipmentTable.php`
+- `app/Filament/Resources/Equipment/Schemas/EquipmentInfolist.php`
+- `public/images/default-equipment.svg`
+- `lang/es.json`
+
+### **Implementación:**
+
+#### **Migración:**
+```php
+Schema::table('equipment', function (Blueprint $table) {
+    $table->string('image')->nullable()->after('description');
+});
+```
+
+#### **Formulario con Editor:**
+```php
+FileUpload::make('image')
+    ->label(__('Image'))
+    ->image()
+    ->imageEditor()
+    ->imageEditorAspectRatios([
+        '16:9',
+        '4:3',
+        '1:1',
+    ])
+    ->directory('equipment-images')
+    ->maxSize(2048)
+    ->helperText(__('Maximum size') . ': 2MB')
+```
+
+#### **Tabla con Imagen Circular:**
+```php
+ImageColumn::make('image')
+    ->label(__('Image'))
+    ->circular()
+    ->size(50)
+    ->defaultImageUrl('/images/default-equipment.svg')
+```
+
+#### **Vista Detallada:**
+```php
+ImageEntry::make('image')
+    ->label(__('Image'))
+    ->size(200)
+    ->defaultImageUrl('/images/default-equipment.svg')
+    ->columnSpanFull()
+```
+
+### **Características:**
+- ✅ Upload con drag & drop
+- ✅ Editor de imágenes integrado (crop, rotate, flip)
+- ✅ Múltiples aspect ratios (16:9, 4:3, 1:1)
+- ✅ Validación de tamaño (máx 2MB)
+- ✅ Imagen por defecto (SVG placeholder)
+- ✅ Visualización circular en tablas (50px)
+- ✅ Visualización grande en detalle (200px)
+- ✅ Storage link configurado automáticamente
+
+### **Impacto:**
+- ✅ Identificación visual rápida de equipos
+- ✅ Mejor experiencia de usuario
+- ✅ Profesionalización del sistema
+- ✅ Facilita inventario visual
+
+---
+
 ## 📈 Próximas Optimizaciones Sugeridas
 
 ### **1. Panel de Auditoría en Filament** ⏳
@@ -461,18 +539,23 @@ Cachear estadísticas del dashboard para reducir carga.
 ### **5. Queue Workers** ⏳
 Mover operaciones pesadas (envío de emails, exports) a colas.
 
+### **6. Optimización de Imágenes** ⏳
+Generar thumbnails automáticamente y usar formato WebP.
+
 ---
 
 ## 📚 Referencias
 
 - **Laravel Query Builder:** https://laravel.com/docs/queries
 - **Filament Tables:** https://filamentphp.com/docs/tables
+- **Filament File Upload:** https://filamentphp.com/docs/forms/fields/file-upload
 - **Database Indexing:** https://dev.mysql.com/doc/refman/8.0/en/optimization-indexes.html
 - **Laravel Cache:** https://laravel.com/docs/cache
+- **Laravel Storage:** https://laravel.com/docs/filesystem
 - **Audit Logging Best Practices:** https://www.cisecurity.org/insights/blog/audit-logging-best-practices
 
 ---
 
 **Documento actualizado:** 16/11/2025  
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Autor:** Sistema de Gestión de Oficina
