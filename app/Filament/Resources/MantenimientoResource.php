@@ -34,6 +34,23 @@ class MantenimientoResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $user = Auth::user();
+        
+        // Mostrar solicitudes pendientes de mantenimiento
+        if ($user && ($user->isMantenimiento() || $user->isAdmin())) {
+            return (string) MaintenanceRequest::where('status', 'pendiente')->count();
+        }
+        
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
     // Solo visible para personal de mantenimiento y admin
     public static function canViewAny(): bool
     {

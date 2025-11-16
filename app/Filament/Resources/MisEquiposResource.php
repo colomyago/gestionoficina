@@ -33,6 +33,51 @@ class MisEquiposResource extends Resource
 
     protected static ?int $navigationSort = 0;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $user = Auth::user();
+        
+        // Mostrar equipos activos del trabajador
+        if ($user && $user->isTrabajador()) {
+            return (string) Loan::active()
+                ->where('user_id', $user->id)
+                ->count();
+        }
+        
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $user = Auth::user();
+        
+        if ($user && $user->isTrabajador()) {
+            // Verificar si hay equipos vencidos
+            $vencidos = Loan::active()
+                ->where('user_id', $user->id)
+                ->where('fecha_devolucion', '<', now())
+                ->count();
+            
+            if ($vencidos > 0) {
+                return 'danger'; // Rojo si hay equipos vencidos
+            }
+            
+            // Verificar si hay equipos por vencer (próximos 7 días)
+            $porVencer = Loan::active()
+                ->where('user_id', $user->id)
+                ->whereBetween('fecha_devolucion', [now(), now()->addDays(7)])
+                ->count();
+            
+            if ($porVencer > 0) {
+                return 'warning'; // Amarillo si hay equipos por vencer
+            }
+            
+            return 'success'; // Verde si todo está bien
+        }
+        
+        return 'primary';
+    }
+
     // Solo visible para trabajadores
     public static function canViewAny(): bool
     {

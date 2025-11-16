@@ -39,6 +39,23 @@ class GestionSolicitudesResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $user = Auth::user();
+        
+        // Admin ve todas las solicitudes pendientes
+        if ($user && $user->isAdmin()) {
+            return (string) Loan::pending()->count();
+        }
+        
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     // Solo visible para admin
     public static function canViewAny(): bool
     {
