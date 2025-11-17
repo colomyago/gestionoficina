@@ -57,6 +57,7 @@ class SystemSettingResource extends Resource
                     ->disabled()
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'max_equipments_per_worker' => 'Límite de Equipos por Trabajador',
+                        'dias_aviso_vencimiento' => 'Días de Advertencia Antes de Vencimiento',
                         'days_before_overdue_warning' => 'Días de Advertencia Antes de Vencimiento',
                         default => $state,
                     })
@@ -72,6 +73,7 @@ class SystemSettingResource extends Resource
                 TextInput::make('value')
                     ->label(fn ($record) => match ($record?->key) {
                         'max_equipments_per_worker' => 'Cantidad Máxima',
+                        'dias_aviso_vencimiento' => 'Cantidad de Días',
                         'days_before_overdue_warning' => 'Cantidad de Días',
                         default => 'Valor',
                     })
@@ -82,11 +84,13 @@ class SystemSettingResource extends Resource
                     ->required()
                     ->helperText(fn ($record) => match ($record?->key) {
                         'max_equipments_per_worker' => 'Cantidad máxima de equipos que un trabajador puede tener prestados al mismo tiempo (entre 1 y 50)',
+                        'dias_aviso_vencimiento' => 'Días antes de la fecha de devolución para mostrar advertencias visuales (recomendado: 3-14 días)',
                         'days_before_overdue_warning' => 'Días antes de la fecha de devolución para mostrar advertencias visuales (recomendado: 3-14 días)',
                         default => 'Ingresa el nuevo valor para esta configuración',
                     })
                     ->suffix(fn ($record) => match ($record?->key) {
                         'max_equipments_per_worker' => 'equipos',
+                        'dias_aviso_vencimiento' => 'días',
                         'days_before_overdue_warning' => 'días',
                         default => null,
                     })
@@ -115,7 +119,8 @@ class SystemSettingResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->copyable(),
+                    ->copyable()
+                    ->formatStateUsing(fn (?string $state): string => $state ? __($state) : ''),
 
                 TextColumn::make('value')
                     ->label(__('Value'))

@@ -249,6 +249,7 @@
     "Maximum size: 2MB. Recommended: 800x600px": "Tamaño máximo: 2MB. Recomendado: 800x600px",
     "System Settings": "Configuraciones del Sistema",
     "System Setting" : "Configuracion del Sistema",
-    "days_before_overdue_warning": "Dias antes de la advertencia de vencimiento",
-    "max_equipments_per_worker ": "Máximo de equipos por trabajador"
+    "dias_aviso_vencimiento": "Días antes de la advertencia de vencimiento",
+    "days_before_overdue_warning": "Días antes de la advertencia de vencimiento",
+    "max_equipments_per_worker": "Máximo de equipos por trabajador"
 }
