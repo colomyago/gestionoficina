@@ -246,5 +246,9 @@
     "The date is required.": "La fecha es requerida.",
     "The date cannot be in the future.": "La fecha no puede estar en el futuro.",
     "Image": "Imagen",
-    "Maximum size: 2MB. Recommended: 800x600px": "Tamaño máximo: 2MB. Recomendado: 800x600px"
+    "Maximum size: 2MB. Recommended: 800x600px": "Tamaño máximo: 2MB. Recomendado: 800x600px",
+    "System Settings": "Configuraciones del Sistema",
+    "System Setting" : "Configuracion del Sistema",
+    "days_before_overdue_warning": "Dias antes de la advertencia de vencimiento",
+    "max_equipments_per_worker ": "Máximo de equipos por trabajador"
 }
