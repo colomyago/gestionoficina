@@ -79,13 +79,13 @@ class UsersTable
             ActionGroup::make([    
                 EditAction::make(),
                 Impersonate::make()
-                ->color('primary')
+                ->color('purple')
                 ->redirectTo('/admin')
                 ->visible(fn ($record): bool => Auth::user()->isAdmin() && $record->id !== Auth::id()),
                 Action::make('asignar_equipo')
-                    ->label(__('Assign Device'))
-                    ->icon('heroicon-o-computer-desktop')
-                    ->color('primary')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+
                     ->visible(fn ($record): bool => 
                         Auth::user()->isAdmin() && 
                         $record->hasRole('trabajador')
