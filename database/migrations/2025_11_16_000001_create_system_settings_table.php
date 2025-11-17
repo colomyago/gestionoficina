@@ -32,7 +32,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'key' => 'days_before_overdue_warning',
+                'key' => 'dias_aviso_vencimiento',
                 'value' => '7',
                 'type' => 'integer',
                 'description' => 'Días antes de la fecha de devolución para mostrar advertencia',
