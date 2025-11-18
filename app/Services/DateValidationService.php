@@ -28,16 +28,17 @@ class DateValidationService
             $returnDate = Carbon::parse($date)->startOfDay();
             $today = Carbon::today();
             
-            // Validar que no sea en el pasado
-            if ($returnDate->lt($today)) {
+            // Validar que no sea hoy o en el pasado
+            if ($returnDate->lte($today)) {
                 return [
                     'valid' => false,
-                    'message' => __('The return date cannot be in the past.')
+                    'message' => __('The return date must be at least :days day(s) from today.', ['days' => $minDays])
                 ];
             }
 
-            // Validar días mínimos
-            if ($returnDate->diffInDays($today) < $minDays) {
+            // Validar días mínimos - usar greaterThanOrEqualTo para comparación correcta
+            $daysUntilReturn = $today->diffInDays($returnDate);
+            if ($daysUntilReturn < $minDays) {
                 return [
                     'valid' => false,
                     'message' => __('The return date must be at least :days day(s) from today.', ['days' => $minDays])
@@ -45,7 +46,7 @@ class DateValidationService
             }
 
             // Validar días máximos (si aplica)
-            if ($maxDays !== null && $returnDate->diffInDays($today) > $maxDays) {
+            if ($maxDays !== null && $daysUntilReturn > $maxDays) {
                 return [
                     'valid' => false,
                     'message' => __('The return date cannot exceed :days day(s) from today.', ['days' => $maxDays])

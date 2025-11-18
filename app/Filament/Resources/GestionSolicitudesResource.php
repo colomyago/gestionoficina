@@ -238,7 +238,7 @@ class GestionSolicitudesResource extends Resource
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set) {
                                     if ($state !== 'custom' && is_numeric($state)) {
-                                        $set('fecha_devolucion', now()->addDays((int)$state)->format('Y-m-d'));
+                                        $set('fecha_devolucion', Carbon::today()->addDays((int)$state)->format('Y-m-d'));
                                     }
                                 }),
                             
@@ -270,7 +270,7 @@ class GestionSolicitudesResource extends Resource
                                 
                                 // Calcular fecha de devolución basada en el período o fecha custom
                                 if (isset($data['periodo_prestamo']) && $data['periodo_prestamo'] !== 'custom' && is_numeric($data['periodo_prestamo'])) {
-                                    $data['fecha_devolucion'] = now()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
+                                    $data['fecha_devolucion'] = Carbon::today()->addDays((int)$data['periodo_prestamo'])->format('Y-m-d');
                                 }
                                 
                                 // Validar fecha de devolución
