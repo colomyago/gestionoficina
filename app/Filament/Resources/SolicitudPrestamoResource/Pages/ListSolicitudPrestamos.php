@@ -25,30 +25,36 @@ class ListSolicitudPrestamos extends ListRecords
     public function getTabs(): array
     {
         $userId = Auth::id();
+        $isAdmin = Auth::user()->isAdmin();
+        
+        $baseQuery = function (Builder $query) use ($userId, $isAdmin) {
+            return $isAdmin ? $query : $query->where('user_id', $userId);
+        };
         
         return [
             'all' => Tab::make(__('All'))
-                ->badge(fn () => \App\Models\Loan::where('user_id', $userId)->count()),
+                ->badge(fn () => \App\Models\Loan::tap($baseQuery)->count())
+                ->modifyQueryUsing($baseQuery),
             
             'pending' => Tab::make(__('Pending'))
-                ->badge(fn () => \App\Models\Loan::where('user_id', $userId)->where('status', 'pendiente')->count())
+                ->badge(fn () => \App\Models\Loan::tap($baseQuery)->where('status', 'pendiente')->count())
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'pendiente')),
+                ->modifyQueryUsing(fn (Builder $query) => $baseQuery($query)->where('status', 'pendiente')),
             
             'active' => Tab::make(__('Active'))
-                ->badge(fn () => \App\Models\Loan::where('user_id', $userId)->where('status', 'activo')->count())
+                ->badge(fn () => \App\Models\Loan::tap($baseQuery)->where('status', 'activo')->count())
                 ->badgeColor('success')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'activo')),
+                ->modifyQueryUsing(fn (Builder $query) => $baseQuery($query)->where('status', 'activo')),
             
             'returned' => Tab::make(__('Returned'))
-                ->badge(fn () => \App\Models\Loan::where('user_id', $userId)->where('status', 'devuelto')->count())
+                ->badge(fn () => \App\Models\Loan::tap($baseQuery)->where('status', 'devuelto')->count())
                 ->badgeColor('gray')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'devuelto')),
+                ->modifyQueryUsing(fn (Builder $query) => $baseQuery($query)->where('status', 'devuelto')),
             
             'rejected' => Tab::make(__('Rejected'))
-                ->badge(fn () => \App\Models\Loan::where('user_id', $userId)->where('status', 'rechazado')->count())
+                ->badge(fn () => \App\Models\Loan::tap($baseQuery)->where('status', 'rechazado')->count())
                 ->badgeColor('danger')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'rechazado')),
+                ->modifyQueryUsing(fn (Builder $query) => $baseQuery($query)->where('status', 'rechazado')),
         ];
     }
 }

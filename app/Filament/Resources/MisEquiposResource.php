@@ -343,6 +343,20 @@ class MisEquiposResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getLabel(): string
+    {
+        return __('My equipment');
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return __('My equipment');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('My equipment');
+    }
     public static function getPages(): array
     {
         return [

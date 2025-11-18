@@ -194,8 +194,7 @@ class GestionSolicitudesResource extends Resource
                         'rechazado' => __('Rejected'),
                         'activo' => __('Active'),
                         'devuelto' => __('Returned'),
-                    ])
-                    ->default('pendiente'),
+                    ]),
             ])
             ->recordActions([
 
