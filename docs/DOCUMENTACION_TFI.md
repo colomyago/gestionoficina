@@ -15,7 +15,285 @@
 
 ---
 
-## 2. OBJETIVO Y DESCRIPCIÓN DE LA PROPUESTA
+## 2. HISTORIAL DE VERSIONES
+
+### Versión 0.1.0 - Inicio del Proyecto (Julio 2025)
+**Fecha**: 15 de Julio de 2025  
+**Estado**: Planificación
+
+**Actividades:**
+- Definición de requisitos funcionales
+- Diseño de arquitectura del sistema
+- Modelado de base de datos (DER)
+- Selección de tecnologías:
+  - Backend: Laravel 12
+  - Frontend: Filament 4.0
+  - Base de datos: MySQL 8.0
+  - Deploy: Railway
+- Definición de roles y permisos
+- Diseño de flujos de trabajo (préstamos, mantenimiento)
+- Creación de repositorio Git
+
+---
+
+### Versión 0.2.0 - Alpha (Agosto 2025)
+**Fecha**: 1 de Agosto de 2025  
+**Estado**: Desarrollo
+
+**Configuración Inicial:**
+- Instalación de Laravel 12
+- Instalación de Filament 4.0
+- Configuración de AdminPanelProvider
+- Autenticación con email y contraseña
+- Panel de administración básico
+
+**Base de Datos:**
+- Migraciones base de Laravel
+- Configuración de MySQL en local (Sail)
+- Tabla `roles` con 3 roles predefinidos
+
+**Entorno de Desarrollo:**
+- Laravel Sail configurado
+- Docker compose con MySQL, Redis, Mailpit
+- Configuración de .env local
+
+---
+
+### Versión 0.3.0 - Alpha (Agosto 2025)
+**Fecha**: 10 de Agosto de 2025  
+**Estado**: Desarrollo
+
+**Nuevas Funcionalidades:**
+- Gestión de Equipos (EquipmentResource)
+- CRUD completo con formularios Filament
+- Campos: nombre, descripción, estado, imagen
+- Filtros por estado en tabla
+- Badges de color por estado
+
+**Migraciones:**
+- Tabla `equipment` con campos: name, description, status, image_path
+- Enum para status: 'disponible', 'prestado', 'mantenimiento', 'baja'
+
+---
+
+### Versión 0.4.0 - Alpha (Agosto 2025)
+**Fecha**: 25 de Agosto de 2025  
+**Estado**: Desarrollo
+
+**Nuevas Funcionalidades:**
+- Gestión de Usuarios (UserResource)
+- CRUD completo de usuarios
+- Asignación de roles en formulario
+- Contraseña opcional al editar (solo cambiar si se completa)
+- Validación de email único
+
+**Seeders:**
+- RoleSeeder: 3 roles (Admin, Trabajador, Mantenimiento)
+- UserSeeder: usuarios de prueba por rol
+  - admin@gestionoficina.com
+  - carlos@gestionoficina.com (trabajador)
+  - pedro@gestionoficina.com (mantenimiento)
+  - Contraseña: password123
+
+---
+
+### Versión 0.5.0 - Alpha (Septiembre 2025)
+**Fecha**: 5 de Septiembre de 2025  
+**Estado**: Testing funcional
+
+**Nuevas Funcionalidades:**
+- Solicitud de Préstamos (SolicitudPrestamoResource)
+- Selección de equipo disponible en formulario
+- Campo de motivo obligatorio
+- Estado inicial "Pendiente"
+
+**Migraciones:**
+- Tabla `loans` con campos: equipment_id, user_id, requested_at, loan_date, return_date, status, approved_by, reason, rejection_reason, notes
+- Enums para status: 'pendiente', 'rechazado', 'activo', 'devuelto'
+
+**Seeders:**
+- Equipos de prueba (10 equipos)
+- Solicitudes de prueba en diferentes estados
+
+---
+
+### Versión 0.6.0 - Alpha (Septiembre 2025)
+**Fecha**: 20 de Septiembre de 2025  
+**Estado**: Testing funcional
+
+**Nuevas Funcionalidades:**
+- Módulo "Mis Solicitudes" (vista trabajador)
+- Módulo "Mis Equipos" (equipos asignados al trabajador)
+- Reportar problemas en equipos asignados
+- Cancelar solicitudes pendientes
+- Ver motivo de rechazo en solicitudes
+
+**Scopes en Models:**
+- `Loan::pending()`, `Loan::active()`, `Loan::rejected()`, `Loan::returned()`
+- `Equipment::available()`, `Equipment::loaned()`, `Equipment::maintenance()`, `Equipment::decommissioned()`
+- `MaintenanceRequest::pending()`, `MaintenanceRequest::inProgress()`, `MaintenanceRequest::completed()`
+
+**Políticas de Autorización:**
+- LoanPolicy: trabajador solo ve sus propias solicitudes
+- EquipmentPolicy: trabajador no puede editar/eliminar equipos
+- UserPolicy: solo admin puede gestionar usuarios
+
+---
+
+### Versión 0.7.0 - Beta (Octubre 2025)
+**Fecha**: 10 de Octubre de 2025  
+**Estado**: Testing interno
+
+**Nuevas Funcionalidades:**
+- Gestión de Solicitudes (vista administrador)
+- Aprobar solicitudes con fecha de devolución
+- Rechazar solicitudes con motivo obligatorio
+- Ver detalles completos de solicitudes
+- Asignación directa de equipos (sin solicitud previa)
+
+**Automatizaciones:**
+- Al aprobar solicitud: equipo pasa a "Prestado", solicitud a "Activo"
+- Al rechazar solicitud: equipo permanece "Disponible", solicitud a "Rechazado"
+- Al reportar problema: equipo pasa a "Mantenimiento", préstamo activo se marca como devuelto
+
+**Validaciones:**
+- No permitir aprobar solicitudes si equipo no está disponible
+- Fecha de devolución debe ser posterior a fecha de préstamo
+- Motivo obligatorio al rechazar solicitud
+- Descripción obligatoria al reportar problema
+
+---
+
+### Versión 0.8.0 - Beta (Octubre 2025)
+**Fecha**: 25 de Octubre de 2025  
+**Estado**: Testing interno
+
+**Nuevas Funcionalidades:**
+- Módulo de Mantenimiento completo
+- Asignación de técnicos a solicitudes de mantenimiento
+- Cambio de estado: Pendiente → En Proceso → Completado
+- Dar de baja equipos irreparables
+- Rechazar solicitudes de mantenimiento
+- Historial de mantenimientos por equipo
+
+**Mejoras de UI:**
+- Badges de color por estado (equipos, solicitudes, mantenimiento)
+- Iconos en menú lateral
+- Tablas responsive
+- Filtros colapsables en móvil
+
+**Migraciones:**
+- Tabla `maintenance_requests` con campos: equipment_id, reported_by, description, status, assigned_to, solution, result
+- Índices en columnas de foreign keys
+
+---
+
+### Versión 0.9.0 - Release Candidate (Noviembre 2025)
+**Fecha**: 10 de Noviembre de 2025  
+**Estado**: Testing final
+
+**Cambios Implementados:**
+- Integración completa de auditoría en todas las operaciones
+- Dashboards con gráficos CircleChart
+- Widget de préstamos activos en dashboard trabajador
+- Widget de solicitudes pendientes en dashboard mantenimiento
+- Configuración del sistema (SystemSettings model + resource)
+- Validación de límite de equipos por trabajador
+- Alertas de vencimiento en dashboard y "Mis Equipos"
+
+**Correcciones:**
+- Filtros en tablas no persistían al navegar
+- Badges de notificación no se actualizaban en tiempo real
+- Fechas de devolución permitían valores pasados
+- Al dar de baja un equipo, el préstamo activo no se cerraba automáticamente
+
+**Pruebas:**
+- Testing completo de flujos de préstamo
+- Testing de mantenimiento (reparado vs baja)
+- Testing de validaciones de fecha
+- Testing de límites de equipos
+
+---
+
+### Versión 1.0.0 - Versión Final (Noviembre 2025)
+**Fecha de Lanzamiento**: 19 de Noviembre de 2025  
+**Estado**: Producción
+
+**Características Principales:**
+- Sistema completamente funcional en producción
+- 11 módulos implementados y operativos
+- 3 roles de usuario con permisos diferenciados
+- Despliegue en Railway con base de datos MySQL 8.0
+- Interfaz completa con Filament 4.0
+
+**Nuevas Funcionalidades:**
+- Dashboard personalizado por rol con widgets estadísticos
+- Gráficos interactivos de distribución de equipos
+- Sistema de badges para notificaciones en tiempo real
+- Alertas de vencimiento configurables
+- Auditoría completa de todas las operaciones
+- Configuración de parámetros del sistema (max_equipments_per_worker, dias_aviso_vencimiento)
+- Historial completo de préstamos por equipo
+- Historial completo de mantenimientos por equipo
+- Filtros avanzados en todas las tablas
+- Búsqueda en tiempo real
+
+**Módulos Implementados:**
+1. Gestión de Equipos (CRUD completo + historial)
+2. Gestión de Usuarios (CRUD + asignación de roles)
+3. Gestión de Roles (sistema de permisos)
+4. Solicitudes de Préstamo (flujo completo: solicitar → aprobar/rechazar → devolver)
+5. Mis Solicitudes (vista trabajador con filtros)
+6. Mis Equipos (equipos asignados al trabajador logueado)
+7. Gestión de Solicitudes (vista admin de todas las solicitudes)
+8. Mantenimiento (flujo completo: reportar → asignar → reparar/dar de baja)
+9. Configuración del Sistema (parámetros editables)
+10. Auditoría (registro automático de operaciones)
+11. Dashboards Personalizados (3 dashboards según rol)
+
+**Mejoras de Seguridad:**
+- Autenticación con Laravel Sanctum
+- Validación de roles en todos los endpoints
+- Políticas de autorización (EquipmentPolicy, LoanPolicy, etc.)
+- Protección CSRF en formularios
+- Sanitización de entradas
+- Validación de fechas (DateValidationService)
+- Límite de equipos por trabajador configurable
+
+**Optimizaciones de Rendimiento:**
+- Eager loading en relaciones Eloquent (->with())
+- Índices en columnas de búsqueda frecuente
+- Caché de consultas pesadas
+- Paginación en todas las tablas (15 items por página)
+- Queries optimizadas con scopes
+
+**Infraestructura:**
+- Despliegue automatizado en Railway
+- Base de datos MySQL 8.0 en Railway
+- HTTPS forzado en producción
+- Manejo de proxies confiables (TrustProxies)
+- Configuración de cookies seguras
+- Variables de entorno protegidas
+
+**Testing:**
+- Tests unitarios para servicios (DateValidationService, LoanValidationService)
+- Tests de feature para flujos completos
+- Tests de políticas de autorización
+- Cobertura de casos edge
+
+**Documentación:**
+- Manual de usuario completo (3 roles)
+- Documentación técnica detallada
+- Guía de despliegue en Railway
+- Comandos de Sail documentados
+- Diagramas de arquitectura
+- Esquema de base de datos (DER)
+- Preguntas frecuentes (FAQ)
+- Glosario de términos
+
+---
+
+## 3. OBJETIVO Y DESCRIPCIÓN DE LA PROPUESTA
 
 ### 2.1 Objetivo General
 Desarrollar un sistema web para la gestión integral de equipos tecnológicos de oficina, que permita controlar préstamos, mantenimiento e inventario a través de un sistema de roles con permisos diferenciados.
@@ -321,89 +599,186 @@ El sistema implementa el patrón **Model-View-Controller (MVC)** extendido con u
 └──────────────────────────────────────────────────────┘
 ```
 
-### 5.2 Estructura de Directorios
+### 5.2 Estructura de Directorios del Proyecto
 
+La organización del proyecto sigue la estructura estándar de Laravel con extensiones para Filament:
+
+#### Directorio Raíz
 ```
 gestionoficina/
-│
-├── app/
-│   ├── Filament/                    # Capa de presentación
-│   │   ├── Resources/               # CRUD de recursos
-│   │   │   ├── Equipment/
-│   │   │   │   ├── EquipmentResource.php
-│   │   │   │   ├── Pages/
-│   │   │   │   ├── Schemas/
-│   │   │   │   └── Tables/
-│   │   │   ├── Users/
-│   │   │   │   ├── UserResource.php
-│   │   │   │   └── ...
-│   │   │   ├── Roles/
-│   │   │   │   └── RoleResource.php
-│   │   │   ├── GestionSolicitudesResource.php  # Admin: todas las solicitudes
-│   │   │   ├── SolicitudPrestamoResource.php    # Trabajador: mis solicitudes
-│   │   │   ├── MisEquiposResource.php           # Trabajador: mis equipos
-│   │   │   ├── MantenimientoResource.php        # Mantenimiento + Admin
-│   │   │   └── SystemSettingResource.php        # Admin: configuración
-│   │   │
-│   │   └── Widgets/                 # Dashboards
-│   │       ├── StatsOverviewWidget.php          # Admin: estadísticas generales
-│   │       ├── EquipmentChartWidget.php         # Admin: gráficos
-│   │       ├── RecentLoansWidget.php            # Admin: préstamos recientes
-│   │       ├── PendingMaintenanceWidget.php     # Mantenimiento: pendientes
-│   │       ├── MyActiveLoansWidget.php          # Trabajador: mis préstamos
-│   │       └── MisEquiposStatsWidget.php        # Trabajador: mis estadísticas
-│   │
-│   ├── Models/                      # Capa de datos (Eloquent)
-│   │   ├── User.php
-│   │   ├── Equipment.php
-│   │   ├── Loan.php
-│   │   ├── MaintenanceRequest.php
-│   │   ├── Role.php
-│   │   ├── AuditLog.php
-│   │   └── SystemSetting.php
-│   │
-│   ├── Policies/                    # Autorización
-│   │   ├── EquipmentPolicy.php
-│   │   ├── LoanPolicy.php
-│   │   ├── MaintenanceRequestPolicy.php
-│   │   └── UserPolicy.php
-│   │
-│   ├── Services/                    # Lógica de negocio
-│   │   ├── LoanValidationService.php
-│   │   ├── DateValidationService.php
-│   │   └── GeminiService.php
-│   │
-│   └── Providers/                   # Configuración
-│       ├── AppServiceProvider.php
-│       └── Filament/
-│           └── AdminPanelProvider.php
-│
-├── database/
-│   ├── migrations/                  # Esquema de base de datos
-│   ├── seeders/                     # Datos de prueba
-│   │   ├── RoleSeeder.php
-│   │   ├── UserSeeder.php
-│   │   ├── EquipmentSeeder.php
-│   │   └── DatabaseSeeder.php
-│   └── factories/
-│       └── UserFactory.php
-│
-├── resources/
-│   ├── views/                       # Vistas Blade
-│   ├── css/
-│   └── js/
-│
-├── routes/
-│   ├── web.php                      # Rutas web
-│   ├── api.php                      # API (no implementada)
-│   └── console.php                  # Comandos Artisan
-│
-├── config/                          # Configuraciones
-├── storage/                         # Archivos y logs
-├── public/                          # Assets públicos
-├── tests/                           # Testing
-└── docs/                            # Documentación
+├── app/                    Código fuente de la aplicación
+├── bootstrap/              Archivos de arranque del framework
+├── config/                 Archivos de configuración
+├── database/               Migraciones, seeders y factories
+├── public/                 Punto de entrada web y assets públicos
+├── resources/              Vistas, CSS y JavaScript
+├── routes/                 Definición de rutas
+├── storage/                Archivos generados, logs y caché
+├── tests/                  Tests automatizados
+├── vendor/                 Dependencias de Composer
+├── docs/                   Documentación del proyecto
+├── .env                    Variables de entorno
+├── artisan                 CLI de Laravel
+├── composer.json           Dependencias PHP
+├── package.json            Dependencias JavaScript
+├── docker-compose.yml      Configuración de Docker
+└── Procfile                Configuración de Railway
 ```
+
+#### app/ - Código de la Aplicación
+
+```
+app/
+│
+├── Filament/                      [Presentación]
+│   ├── Resources/                 → CRUD (Equipos, Usuarios, Préstamos, etc.)
+│   ├── Widgets/                   → Dashboards y estadísticas
+│   └── Pages/                     → Páginas personalizadas
+│
+├── Models/                        [Datos]
+│   ├── User.php, Role.php
+│   ├── Equipment.php, Loan.php
+│   ├── MaintenanceRequest.php
+│   └── AuditLog.php, SystemSetting.php
+│
+├── Policies/                      [Autorización]
+│   └── *Policy.php                → Permisos por rol
+│
+├── Services/                      [Lógica de Negocio]
+│   └── *ValidationService.php     → Reglas de validación
+│
+├── Http/                          [HTTP]
+│   ├── Controllers/
+│   └── Middleware/
+│
+└── Providers/                     [Configuración]
+    └── AppServiceProvider.php
+```
+
+#### database/ - Base de Datos
+
+```
+database/
+│
+├── migrations/                         Esquema de base de datos
+│   ├── 0001_01_01_000000_create_users_table.php
+│   ├── 2025_10_20_213921_create_roles_table.php
+│   ├── 2025_09_17_061641_create_equipment_table.php
+│   ├── 2025_10_20_000002_create_loans_table.php
+│   ├── 2025_10_20_000003_create_maintenance_requests_table.php
+│   ├── 2025_11_16_000001_create_system_settings_table.php
+│   └── 2025_11_16_000003_create_audit_logs_table.php
+│
+├── seeders/                            Datos de prueba
+│   ├── DatabaseSeeder.php              → Seeder principal
+│   ├── RoleSeeder.php                  → 3 roles base
+│   ├── UserSeeder.php                  → 15 usuarios de demo
+│   └── EquipmentSeeder.php             → 41 equipos de demo
+│
+└── factories/                          Factories para testing
+    └── UserFactory.php
+```
+
+#### resources/ - Vistas y Assets
+
+```
+resources/
+│
+├── views/                              Plantillas Blade
+│   ├── components/                     → Componentes reutilizables
+│   ├── layouts/                        → Layouts base
+│   └── vendor/                         → Vistas de paquetes
+│
+├── css/
+│   └── app.css                         → Estilos principales (Tailwind)
+│
+└── js/
+    └── app.js                          → JavaScript principal
+```
+
+#### routes/ - Rutas de la Aplicación
+
+```
+routes/
+│
+├── web.php                             Rutas web (Filament las maneja)
+├── api.php                             Rutas API (no implementadas)
+└── console.php                         Comandos Artisan personalizados
+```
+
+#### config/ - Configuraciones
+
+```
+config/
+│
+├── app.php                             Configuración general
+├── auth.php                            Autenticación
+├── database.php                        Conexiones de BD
+├── filament.php                        Configuración de Filament
+├── services.php                        APIs externas
+└── session.php                         Configuración de sesiones
+```
+
+#### tests/ - Testing
+
+```
+tests/
+│
+├── Feature/                            Tests de funcionalidades
+│   ├── LoanTest.php                    → Tests de préstamos
+│   ├── EquipmentTest.php               → Tests de equipos
+│   └── MaintenanceTest.php             → Tests de mantenimiento
+│
+├── Unit/                               Tests unitarios
+│   ├── LoanValidationServiceTest.php   → Tests de servicios
+│   └── DateValidationServiceTest.php
+│
+└── TestCase.php                        Clase base de tests
+```
+
+#### docs/ - Documentación
+
+```
+docs/
+│
+├── DOCUMENTACION_TFI.md                Este documento
+├── SISTEMA_ROLES.md                    Roles y permisos detallados
+├── FLUJO_COMPLETO_SISTEMA.md           Flujos de trabajo
+├── RAILWAY_DEPLOYMENT.md               Guía de deployment
+├── DATOS_DEMO.md                       Usuarios y equipos de demo
+├── COMANDOS_SAIL.md                    Referencia de comandos
+└── DIAGRAMA_BASE_DATOS.md              Diagrama ER
+```
+
+#### Archivos de Configuración del Proyecto
+
+```
+Raíz del proyecto/
+│
+├── .env                                Variables de entorno
+├── .env.example                        Plantilla de variables
+├── .gitignore                          Archivos ignorados por Git
+├── artisan                             CLI de Laravel
+├── composer.json                       Dependencias PHP
+├── composer.lock                       Versiones exactas de dependencias
+├── package.json                        Dependencias JavaScript
+├── package-lock.json                   Versiones exactas de npm
+├── vite.config.js                      Configuración de Vite (build)
+├── tailwind.config.js                  Configuración de Tailwind CSS
+├── phpunit.xml                         Configuración de tests
+├── docker-compose.yml                  Servicios Docker (Sail)
+├── Dockerfile                          Imagen Docker personalizada
+├── Procfile                            Comandos de Railway
+└── README.md                           Información del proyecto
+```
+
+**Notas sobre la estructura:**
+
+1. **Separación de responsabilidades**: Cada directorio tiene un propósito específico
+2. **Escalabilidad**: Fácil agregar nuevos recursos siguiendo la estructura
+3. **Mantenibilidad**: Código organizado por capas (Presentación, Lógica, Datos)
+4. **Testing**: Tests organizados por tipo (Feature/Unit)
+5. **Documentación**: Centralizada en carpeta `docs/`
 
 ### 5.3 Flujo de una Operación Típica
 
@@ -1006,34 +1381,682 @@ Ver detalle completo en: `docs/DATOS_DEMO.md`
 
 ---
 
-## 8. CAPTURAS DE PANTALLA Y MANUAL DE USUARIO
+## 8. MANUAL DE USUARIO
 
-### 8.1 Guía para Capturar Pantallas
+### 8.1 Introducción
 
-Para tu informe, necesitas capturar:
+El Sistema de Gestión de Oficina es una aplicación web diseñada para facilitar el control y administración de equipos tecnológicos dentro de una organización. El sistema permite gestionar préstamos de equipos, controlar su estado, registrar mantenimientos y generar auditorías de todas las operaciones realizadas.
 
-**Dashboard Admin:**
-1. Vista principal con widgets (Stats, Chart, Recent Loans)
-2. Gestión de Equipos - Listado con filtros
-3. Gestión de Equipos - Formulario de edición
-4. Gestión de Solicitudes - Tabla con badge de pendientes
-5. Gestión de Solicitudes - Acción de aprobar (modal)
-6. Gestión de Usuarios - Listado con roles
-7. Mantenimiento - Listado de solicitudes
+**Acceso al Sistema**
 
-**Dashboard Trabajador:**
-1. Vista principal con widgets (My Active Loans, Stats)
-2. Solicitar Préstamo - Formulario
-3. Mis Solicitudes - Listado (con diferentes estados)
-4. Mis Equipos - Listado con acción "Reportar Problema"
-5. Reportar Problema - Modal con formulario
+URL de acceso: https://gestionoficina-production.up.railway.app/admin
 
-**Dashboard Mantenimiento:**
-1. Vista principal con widget de pendientes
-2. Solicitudes de Mantenimiento - Listado
-3. Completar Mantenimiento - Formulario con opciones (reparado/baja)
+El sistema es compatible con los principales navegadores web (Chrome, Firefox, Edge, Safari) y funciona correctamente en dispositivos desktop, tablets y móviles.
 
-### 8.2 Manual de Usuario - Estructura Sugerida
+**Roles de Usuario**
+
+El sistema cuenta con tres roles diferenciados:
+
+- **Administrador**: Control completo del sistema. Gestiona equipos, usuarios, aprueba o rechaza solicitudes de préstamo, configura parámetros del sistema y visualiza auditorías.
+
+- **Trabajador**: Usuario estándar que puede solicitar préstamos de equipos, consultar sus solicitudes activas, reportar problemas en equipos asignados y devolver equipos.
+
+- **Personal de Mantenimiento**: Responsable de gestionar las solicitudes de reparación, actualizar el estado de los equipos en mantenimiento y decidir si un equipo debe ser reparado o dado de baja.
+
+**Organización del Manual**
+
+Este manual está organizado en tres secciones principales, una por cada rol de usuario. Cada sección incluye instrucciones detalladas acompañadas de capturas de pantalla numeradas que ilustran cada funcionalidad.
+
+---
+
+### 8.2 Inicio de Sesión
+
+Todos los usuarios acceden al sistema a través de la misma pantalla de login. El sistema identificará automáticamente el rol del usuario y lo redirigirá al dashboard correspondiente.
+
+**Figura 1: Pantalla de Inicio de Sesión**
+*[CAPTURA: Pantalla completa de login con campos de email y contraseña, botón "Iniciar Sesión"]*
+
+**Pasos para iniciar sesión:**
+
+1. Abrir la URL del sistema en el navegador web
+2. Ingresar el email proporcionado por el administrador
+3. Ingresar la contraseña
+4. Hacer clic en el botón "Iniciar Sesión"
+5. El sistema valida las credenciales y redirige al dashboard según el rol asignado
+
+En caso de olvidar la contraseña, contactar al administrador del sistema para solicitar un restablecimiento.
+
+---
+
+### 8.3 Manual del Administrador
+
+Los administradores tienen control completo sobre todas las funcionalidades del sistema. Pueden gestionar equipos, usuarios, aprobar o rechazar solicitudes, configurar parámetros y consultar auditorías.
+
+#### 8.3.1 Dashboard del Administrador
+
+**Figura 2: Dashboard Completo del Administrador**
+*[CAPTURA: Vista completa del dashboard con widgets de estadísticas, gráfico circular, tabla de préstamos recientes, menú lateral con badges]*
+
+Al iniciar sesión, el administrador visualiza un dashboard con información relevante:
+
+- **Estadísticas Generales**: Muestra el total de equipos en el sistema, cantidad de equipos prestados, disponibles y en mantenimiento.
+
+- **Gráfico Circular**: Representa visualmente la distribución de equipos según su estado actual.
+
+- **Préstamos Recientes**: Tabla con los últimos préstamos realizados, incluyendo usuario, equipo, fechas y estado.
+
+- **Badges de Notificación**: En el menú lateral aparecen badges numéricos indicando solicitudes pendientes de aprobación o equipos que requieren atención.
+
+#### 8.3.2 Gestión de Equipos
+
+##### Ver y Filtrar Equipos
+
+**Figura 3: Listado de Equipos con Filtros**
+*[CAPTURA: Página "Equipos" con tabla completa, barra de búsqueda, filtros de estado, badges de colores, columnas ordenables]*
+
+Para acceder al listado de equipos:
+
+1. Hacer clic en "Equipos" en el menú lateral
+2. Se muestra una tabla con todos los equipos del sistema
+
+**Características del listado:**
+
+- **Barra de búsqueda**: Permite buscar equipos por nombre
+- **Filtros por estado**: Disponible, Prestado, Mantenimiento, Baja
+- **Badges de color**: Identifican visualmente el estado de cada equipo (verde=disponible, amarillo=prestado, azul=mantenimiento, gris=baja)
+- **Columnas ordenables**: Click en los encabezados para ordenar alfabéticamente o por fecha
+- **Acciones disponibles**: Botones de editar, ver historial, asignar, eliminar
+
+##### Crear Nuevo Equipo
+
+**Figura 4: Formulario de Creación de Equipo**
+*[CAPTURA: Modal o página de crear equipo con formulario vacío: Nombre, Descripción, Estado, Imagen]*
+
+Para crear un nuevo equipo:
+
+1. En la página de Equipos, hacer clic en el botón "Nuevo Equipo" o "Crear"
+2. Completar los siguientes campos:
+   - **Nombre** (obligatorio): Identificación del equipo (ej: "Laptop Dell XPS 15")
+   - **Descripción** (opcional): Detalles adicionales como especificaciones técnicas, número de serie, ubicación física
+   - **Estado**: Seleccionar estado inicial (generalmente "Disponible")
+   - **Imagen** (opcional): Cargar una fotografía del equipo
+3. Hacer clic en "Guardar" o "Crear"
+4. El sistema confirma la creación y el equipo aparece en el listado
+
+##### Editar Equipo Existente
+
+**Figura 5: Formulario de Edición con Datos Pre-cargados**
+*[CAPTURA: Modal de edición de un equipo existente con formulario completo de datos]*
+
+Para modificar un equipo:
+
+1. En la tabla de equipos, localizar el equipo a editar
+2. Hacer clic en el botón "Editar" (icono de lápiz)
+3. Se abre un formulario con los datos actuales del equipo
+4. Modificar los campos necesarios
+5. Hacer clic en "Guardar"
+6. El sistema actualiza la información
+
+**Nota**: El cambio de estado desde esta pantalla debe hacerse con precaución. Los cambios de estado automáticos (cuando se aprueba un préstamo o se reporta un problema) son gestionados por el sistema.
+
+##### Ver Historial de Préstamos
+
+**Figura 6: Historial Completo de un Equipo**
+*[CAPTURA: Vista de historial con tabla de préstamos anteriores, fechas, usuarios, estados]*
+
+Para consultar el historial de un equipo:
+
+1. En la tabla de equipos, hacer clic en "Ver Historial" o icono de historial
+2. Se muestra una tabla con todos los préstamos históricos del equipo
+
+**Información visible:**
+- Usuario que tuvo asignado el equipo
+- Fecha de préstamo
+- Fecha de devolución
+- Estado de la solicitud
+- Administrador que aprobó
+- Notas adicionales
+
+Esta información es útil para:
+- Identificar equipos con alto índice de uso
+- Rastrear responsabilidades en caso de daños
+- Analizar patrones de uso
+
+#### 8.3.3 Gestión de Solicitudes de Préstamo
+
+##### Listado de Solicitudes
+
+**Figura 7: Todas las Solicitudes con Badge de Pendientes**
+*[CAPTURA: Página "Gestión de Solicitudes" con tabla de solicitudes, badge numérico en menú, badges de color por estado]*
+
+Para acceder a las solicitudes:
+
+1. Hacer clic en "Gestión de Solicitudes" en el menú lateral
+2. El badge junto al nombre del menú indica la cantidad de solicitudes pendientes de aprobación
+3. Se muestra una tabla con todas las solicitudes del sistema
+
+**Características:**
+- **Filtros**: Por estado (pendiente, activo, rechazado, devuelto), usuario solicitante, equipo
+- **Badges de color**: Amarillo=pendiente, verde=activo, rojo=rechazado, gris=devuelto
+- **Información visible**: Trabajador solicitante, equipo solicitado, motivo, fecha de solicitud, estado
+
+##### Aprobar Solicitud
+
+**Figura 8: Modal de Aprobación de Solicitud**
+*[CAPTURA: Modal con fecha de préstamo auto-completada, selector de fecha de devolución, campo de notas opcional]*
+
+Para aprobar una solicitud pendiente:
+
+1. Localizar la solicitud con estado "Pendiente"
+2. Hacer clic en el botón "Aprobar"
+3. Se abre un modal con los siguientes campos:
+   - **Fecha de préstamo**: Se completa automáticamente con la fecha actual
+   - **Fecha de devolución**: Seleccionar usando el calendario (debe ser posterior a la fecha de préstamo)
+   - **Notas** (opcional): Instrucciones o recordatorios para el trabajador
+4. Hacer clic en "Aprobar"
+
+**Figura 9: Solicitud Aprobada - Cambio de Estado**
+*[CAPTURA: Tabla de solicitudes después de aprobar, notificación de éxito, solicitud con badge verde "Activo"]*
+
+**¿Qué sucede al aprobar?**
+- La solicitud cambia al estado "Activo"
+- El equipo cambia automáticamente al estado "Prestado"
+- El trabajador puede ver el equipo en su sección "Mis Equipos"
+- Se registra la operación en la auditoría del sistema
+
+##### Rechazar Solicitud
+
+**Figura 10: Modal de Rechazo con Motivo**
+*[CAPTURA: Modal con campo de texto "Motivo del rechazo" obligatorio]*
+
+Para rechazar una solicitud:
+
+1. Localizar la solicitud con estado "Pendiente"
+2. Hacer clic en el botón "Rechazar"
+3. Se abre un modal solicitando el motivo del rechazo
+4. **Importante**: El campo de motivo es obligatorio. Explicar claramente por qué se rechaza la solicitud (ej: "El equipo está programado para mantenimiento", "El equipo ya está asignado a otro proyecto prioritario")
+5. Hacer clic en "Rechazar"
+
+El trabajador podrá ver este motivo al consultar su solicitud, por lo que debe ser claro y profesional.
+
+##### Ver Detalles de Solicitud
+
+**Figura 11: Vista Detallada de una Solicitud**
+*[CAPTURA: Panel con toda la información de la solicitud: equipo, trabajador, motivo, fechas, estado, notas]*
+
+Para ver los detalles completos de una solicitud:
+
+1. En la tabla de solicitudes, hacer clic en "Ver" o en el nombre de la solicitud
+2. Se muestra un panel con toda la información:
+   - Datos del equipo solicitado (nombre, descripción, estado)
+   - Información del trabajador solicitante
+   - Motivo de la solicitud
+   - Fecha de solicitud
+   - Fechas de préstamo y devolución (si fue aprobada)
+   - Estado actual
+   - Notas del administrador
+   - Motivo de rechazo (si aplica)
+
+#### 8.3.4 Gestión de Usuarios
+
+##### Listado de Usuarios
+
+**Figura 12: Tabla de Usuarios con Roles**
+*[CAPTURA: Página "Usuarios" con lista de usuarios, badges de roles (Admin=azul, Trabajador=verde, Mantenimiento=amarillo), email, acciones]*
+
+Para acceder a la gestión de usuarios:
+
+1. Hacer clic en "Usuarios" en el menú lateral
+2. Se muestra una tabla con todos los usuarios del sistema
+
+**Información visible:**
+- Nombre completo
+- Email (usado para login)
+- Rol (identificado con badge de color)
+- Acciones disponibles (editar, eliminar)
+
+##### Asignar Equipo Directamente a Usuario
+
+**Figura 13: Modal de Asignación Directa de Equipo**
+*[CAPTURA: Modal con selector de usuario, campo fecha de devolución, campo notas]*
+
+El administrador puede asignar equipos directamente sin que el trabajador haga una solicitud previa:
+
+1. Ir a la página de "Equipos"
+2. Localizar un equipo con estado "Disponible"
+3. Hacer clic en el botón "Asignar"
+4. Se abre un modal con:
+   - **Selector de usuario**: Lista desplegable con todos los trabajadores
+   - **Fecha de devolución**: Seleccionar usando el calendario
+   - **Notas** (opcional): Instrucciones o detalles adicionales
+5. Hacer clic en "Asignar"
+
+**¿Qué sucede?**
+- Se crea automáticamente un préstamo (sin solicitud previa)
+- El equipo pasa al estado "Prestado"
+- El trabajador ve el equipo en su sección "Mis Equipos"
+- Se registra la operación en auditoría
+
+##### Crear Nuevo Usuario
+
+**Figura 14: Formulario de Creación de Usuario**
+*[CAPTURA: Modal de crear usuario con campos: Nombre, Email, Contraseña, Confirmar contraseña, Rol]*
+
+Para crear un nuevo usuario:
+
+1. En la página de Usuarios, hacer clic en "Nuevo Usuario"
+2. Completar los siguientes campos:
+   - **Nombre**: Nombre completo del usuario
+   - **Email**: Dirección de correo electrónico (será el nombre de usuario para login)
+   - **Contraseña**: Debe cumplir con los requisitos de seguridad (mínimo 8 caracteres)
+   - **Confirmar contraseña**: Debe coincidir con la contraseña ingresada
+   - **Rol**: Seleccionar Administrador, Trabajador o Mantenimiento
+3. Hacer clic en "Crear"
+
+**Figura 15: Usuario Creado Exitosamente**
+*[CAPTURA: Tabla de usuarios después de crear, notificación de éxito, nuevo usuario en la tabla]*
+
+El sistema confirma la creación y el usuario aparece en la tabla. Se recomienda comunicar las credenciales al usuario de forma segura.
+
+##### Editar Usuario
+
+**Figura 16: Edición de Usuario Existente**
+*[CAPTURA: Modal de editar usuario con formulario y datos pre-cargados, nota visible de que contraseña es opcional]*
+
+Para modificar un usuario existente:
+
+1. En la tabla de usuarios, hacer clic en "Editar"
+2. Se abre un formulario con los datos actuales del usuario
+3. Modificar los campos necesarios
+4. **Importante**: El campo de contraseña es opcional. Solo completarlo si se desea cambiar la contraseña del usuario
+5. Hacer clic en "Guardar"
+
+**Precauciones:**
+- Cambiar el rol de un usuario afecta sus permisos inmediatamente
+- Si se modifica el email, el usuario deberá usar el nuevo email para iniciar sesión
+
+#### 8.3.5 Gestión de Mantenimiento (Vista Administrador)
+
+**Figura 17: Solicitudes de Mantenimiento - Vista Administrador**
+*[CAPTURA: Página "Mantenimiento" con tabla de todas las solicitudes: Equipo, Reportado por, Descripción, Técnico, Estado, Resultado]*
+
+El administrador puede visualizar todas las solicitudes de mantenimiento del sistema:
+
+1. Hacer clic en "Mantenimiento" en el menú lateral
+2. Se muestra una tabla con todas las solicitudes
+
+**Información visible:**
+- Equipo en mantenimiento
+- Trabajador que reportó el problema
+- Descripción detallada del problema
+- Técnico asignado (si aplica)
+- Estado: Pendiente, En proceso, Completado, Rechazado
+- Resultado: Reparado, Dado de baja, o vacío si aún no está completado
+
+Esta vista es de solo lectura para el administrador. La gestión activa la realiza el personal de mantenimiento.
+
+#### 8.3.6 Configuración del Sistema
+
+**Figura 18: Parámetros Configurables**
+*[CAPTURA: Página "Configuración del Sistema" con tabla de parámetros: keys y valores (max_equipments_per_worker: 5, dias_aviso_vencimiento: 7)]*
+
+Para acceder a la configuración:
+
+1. Hacer clic en "Configuración" en el menú lateral
+2. Se muestra una tabla con los parámetros configurables del sistema
+
+**Parámetros disponibles:**
+
+- **max_equipments_per_worker**: Cantidad máxima de equipos que un trabajador puede tener asignados simultáneamente (valor por defecto: 5)
+
+- **dias_aviso_vencimiento**: Cantidad de días previos al vencimiento en los que el sistema muestra alertas de vencimiento próximo (valor por defecto: 7)
+
+**Figura 19: Editar Parámetro**
+*[CAPTURA: Modal de edición de parámetro con campo para cambiar el valor]*
+
+Para modificar un parámetro:
+
+1. Hacer clic en "Editar" junto al parámetro deseado
+2. Se abre un modal con el valor actual
+3. Ingresar el nuevo valor
+4. Hacer clic en "Guardar"
+5. Los cambios se aplican inmediatamente en todo el sistema
+
+---
+
+### 8.4 Manual del Trabajador
+
+Los trabajadores tienen acceso limitado a funcionalidades relacionadas exclusivamente con sus propios préstamos y equipos asignados. No pueden ver información de otros trabajadores ni realizar acciones administrativas.
+
+#### 8.4.1 Dashboard del Trabajador
+
+**Figura 20: Dashboard Personalizado del Trabajador**
+*[CAPTURA: Dashboard con widget "Mis Préstamos Activos", estadísticas personales, alertas de vencimiento]*
+
+Al iniciar sesión, el trabajador visualiza un dashboard personalizado con:
+
+- **Widget "Mis Préstamos Activos"**: Lista de equipos actualmente asignados al trabajador con fechas de devolución
+
+- **Mis Estadísticas**: Números personales como total de préstamos realizados, préstamos activos actuales, solicitudes pendientes
+
+- **Alertas de Vencimiento**: Si algún equipo asignado está próximo a su fecha de devolución (según el parámetro configurado por el administrador), se muestra una alerta visual
+
+#### 8.4.2 Solicitar un Préstamo
+
+**Figura 21: Formulario de Solicitud de Préstamo**
+*[CAPTURA: Modal con selector de equipo (lista desplegable), campo motivo]*
+
+Para solicitar un equipo en préstamo:
+
+1. Hacer clic en "Solicitar Préstamo" en el menú o botón principal
+2. Se abre un formulario con dos campos:
+   - **Equipo**: Lista desplegable que muestra solo los equipos con estado "Disponible"
+   - **Motivo**: Campo de texto obligatorio donde se debe explicar claramente para qué necesita el equipo
+3. Completar ambos campos
+4. Hacer clic en "Enviar Solicitud"
+
+**Ejemplo de motivo bien redactado:**
+"Necesito la laptop Dell XPS para realizar presentación con cliente externo el día viernes 22/11. Presentación de propuesta comercial que requiere software de diseño."
+
+**Figura 22: Solicitud Creada Exitosamente**
+*[CAPTURA: Notificación de éxito después de crear solicitud]*
+
+El sistema confirma que la solicitud fue creada. Ahora debe esperar a que un administrador la apruebe o rechace. El trabajador recibirá el equipo solo después de la aprobación.
+
+#### 8.4.3 Mis Solicitudes
+
+**Figura 23: Historial de Solicitudes del Trabajador**
+*[CAPTURA: Página "Mis Solicitudes" con tabla de SOLO las solicitudes del usuario logueado, badges de diferentes estados]*
+
+Para consultar todas sus solicitudes:
+
+1. Hacer clic en "Mis Solicitudes" en el menú lateral
+2. Se muestra una tabla con todas las solicitudes realizadas por el trabajador (solo las propias, no de otros usuarios)
+
+**Estados posibles:**
+
+- **Pendiente** (badge amarillo): La solicitud está esperando aprobación del administrador
+- **Activo** (badge verde): La solicitud fue aprobada y el equipo está asignado al trabajador
+- **Rechazado** (badge rojo): La solicitud fue rechazada por el administrador
+- **Devuelto** (badge gris): El préstamo finalizó y el equipo fue devuelto
+
+**Acciones disponibles:**
+
+- **Cancelar**: Solo disponible para solicitudes pendientes. Permite cancelar una solicitud antes de que sea evaluada
+- **Ver Detalles**: Muestra información completa de la solicitud
+
+**Figura 24: Ver Motivo de Rechazo**
+*[CAPTURA: Detalle de solicitud rechazada con motivo visible explicando por qué se rechazó]*
+
+Si una solicitud fue rechazada, al hacer clic en "Ver Detalles" se muestra el motivo proporcionado por el administrador. Esto permite al trabajador comprender por qué no se aprobó su solicitud y, si corresponde, realizar una nueva solicitud en el futuro considerando ese motivo.
+
+#### 8.4.4 Mis Equipos
+
+**Figura 25: Equipos Actualmente Asignados**
+*[CAPTURA: Página "Mis Equipos" con tabla de equipos asignados, fechas de préstamo y devolución, alertas de vencimiento]*
+
+Para ver los equipos actualmente asignados:
+
+1. Hacer clic en "Mis Equipos" en el menú lateral
+2. Se muestra una tabla con todos los equipos que el trabajador tiene en su poder
+
+**Información mostrada:**
+- Nombre del equipo
+- Descripción
+- Fecha de préstamo (cuándo se le asignó)
+- Fecha de devolución estimada
+- **Alerta de vencimiento**: Si faltan 7 días o menos para la fecha de devolución, se muestra un badge de advertencia "Vence en X días"
+
+**Acciones disponibles:**
+- **Reportar Problema**: Permite notificar problemas técnicos o daños en el equipo
+- **Ver Detalles**: Muestra información completa del préstamo
+
+**Importante:** Cuando un equipo muestra alerta de vencimiento próximo, el trabajador debe planificar su devolución o contactar al administrador para solicitar una extensión si aún necesita el equipo.
+
+#### 8.4.5 Reportar Problema
+
+**Figura 26: Modal de Reporte de Problema**
+*[CAPTURA: Modal con campo de descripción del problema (obligatorio)]*
+
+Si un equipo asignado presenta fallas o daños:
+
+1. En "Mis Equipos", localizar el equipo con problemas
+2. Hacer clic en el botón "Reportar Problema"
+3. Se abre un modal con un campo de descripción
+4. **Importante**: Describir el problema de forma detallada y técnica. Incluir:
+   - Síntomas específicos
+   - Cuándo comenzó el problema
+   - Si el equipo es aún utilizable o no
+   - Cualquier circunstancia relevante (caída, derrame de líquido, etc.)
+5. Hacer clic en "Reportar"
+
+**Ejemplo de descripción detallada:**
+"La pantalla de la laptop parpadea constantemente. Se observa una línea vertical azul en el lado derecho que empeora al mover el equipo. El problema comenzó hace 2 días. El equipo es aún utilizable pero la línea es molesta para trabajar."
+
+**Figura 27: Problema Reportado - Equipo en Mantenimiento**
+*[CAPTURA: Notificación de éxito, equipo desapareciendo de "Mis Equipos"]*
+
+**¿Qué sucede al reportar un problema?**
+- El sistema crea automáticamente una solicitud de mantenimiento
+- El equipo cambia al estado "Mantenimiento"
+- El equipo desaparece de "Mis Equipos" del trabajador
+- Si el trabajador tenía un préstamo activo de ese equipo, el préstamo se marca como devuelto automáticamente
+- El personal de mantenimiento recibe la solicitud y se encargará de evaluar y reparar el equipo
+- El trabajador no necesita realizar ninguna acción adicional
+
+---
+
+### 8.5 Manual del Personal de Mantenimiento
+
+El personal de mantenimiento es responsable de gestionar las reparaciones de equipos, actualizar su estado y decidir si un equipo debe ser reparado o dado de baja permanentemente.
+
+#### 8.5.1 Dashboard de Mantenimiento
+
+**Figura 28: Dashboard con Solicitudes Pendientes**
+*[CAPTURA: Dashboard con widget de solicitudes pendientes, badge en menú con cantidad]*
+
+Al iniciar sesión, el personal de mantenimiento visualiza:
+
+- **Widget "Solicitudes Pendientes"**: Lista de equipos reportados esperando ser atendidos
+- **Badge en el menú**: Número de solicitudes pendientes de atención
+- **Estadísticas**: Total de solicitudes completadas, en proceso, pendientes
+
+#### 8.5.2 Gestión de Solicitudes de Mantenimiento
+
+**Figura 29: Listado de Solicitudes de Mantenimiento**
+*[CAPTURA: Tabla completa con equipos reportados, descripción de problemas, estados, filtros]*
+
+Para acceder a las solicitudes:
+
+1. Hacer clic en "Solicitudes de Mantenimiento" en el menú lateral
+2. Se muestra una tabla con todas las solicitudes de reparación
+
+**Información visible:**
+- Equipo en mantenimiento
+- Trabajador que reportó el problema
+- Descripción detallada del problema
+- Estado: Pendiente, En proceso, Completado, Rechazado
+- Técnico asignado (si ya fue asignado)
+- Resultado: Reparado, Dado de baja (si ya está completado)
+
+**Filtros disponibles:**
+- Por estado (pendiente, en proceso, completado, rechazado)
+- Por equipo
+- Por técnico asignado
+
+**Acciones disponibles:**
+- **Asignarme**: El técnico se asigna la solicitud a sí mismo
+- **Cambiar a En Proceso**: Marca que se comenzó a trabajar en la reparación
+- **Completar Mantenimiento**: Finaliza la solicitud indicando el resultado
+- **Rechazar**: Si el problema no requiere mantenimiento real
+
+**Flujo típico de trabajo:**
+
+1. Técnico ve solicitudes pendientes
+2. Se asigna una solicitud haciendo clic en "Asignarme"
+3. Cambia el estado a "En Proceso" cuando comienza a trabajar
+4. Realiza la reparación física del equipo
+5. Completa la solicitud indicando la solución aplicada y el resultado
+
+#### 8.5.3 Completar Mantenimiento
+
+**Figura 30: Modal de Completar Mantenimiento**
+*[CAPTURA: Modal con campo "Solución aplicada", selector "Resultado" (Reparado/Dado de Baja)]*
+
+Para completar una solicitud de mantenimiento:
+
+1. En la tabla de solicitudes, localizar una solicitud "En Proceso"
+2. Hacer clic en "Completar"
+3. Se abre un modal con dos campos:
+
+**Campos del formulario:**
+
+- **Solución aplicada** (obligatorio): Descripción técnica detallada de las acciones realizadas. Debe incluir:
+  - Diagnóstico del problema
+  - Repuestos o componentes reemplazados (con modelos si es posible)
+  - Pruebas realizadas
+  - Tiempo estimado de prueba
+  - Estado final del equipo
+
+- **Resultado** (obligatorio): Seleccionar una de dos opciones:
+  - **Reparado**: El equipo fue reparado exitosamente y puede volver a usarse
+  - **Dado de Baja**: El equipo no puede ser reparado o el costo de reparación no justifica mantenerlo
+
+**Ejemplo de "Solución aplicada" para Reparado:**
+"Reemplazo de pantalla LCD modelo LP156WF6-SPB1. Cable flex reinstalado correctamente. Testeo realizado durante 30 minutos sin problemas. Equipo funcionando correctamente. Se recomienda manejar con cuidado ya que esta es la segunda pantalla reemplazada."
+
+**Ejemplo de "Solución aplicada" para Dado de Baja:**
+"Diagnóstico: Daño irreparable en placa madre, circuitos quemados. Costo estimado de reparación: $800. Valor de reemplazo del equipo completo: $600. El equipo tiene 6 años de antigüedad y múltiples reparaciones previas. Se recomienda dar de baja y adquirir equipo nuevo."
+
+4. Hacer clic en "Completar"
+
+**¿Qué sucede según el resultado?**
+
+**Si se marca como "Reparado":**
+- La solicitud de mantenimiento cambia al estado "Completado"
+- El equipo vuelve automáticamente al estado "Disponible"
+- El equipo puede ser asignado nuevamente a trabajadores
+- Se registra la reparación en el historial del equipo
+
+**Si se marca como "Dado de Baja":**
+- La solicitud de mantenimiento cambia al estado "Completado"
+- El equipo cambia al estado "Baja" permanentemente
+- El equipo no puede ser asignado nunca más
+- El equipo permanece en el sistema solo como registro histórico
+- El administrador debe considerar adquirir un equipo de reemplazo
+
+#### 8.5.4 Rechazar Solicitud de Mantenimiento
+
+En algunos casos, un trabajador puede reportar un "problema" que en realidad no requiere mantenimiento técnico (por ejemplo, el equipo solo necesitaba un reinicio).
+
+Para rechazar una solicitud:
+
+1. En la tabla de solicitudes, hacer clic en "Rechazar"
+2. Se abre un modal solicitando el motivo
+3. Explicar por qué no requiere mantenimiento
+4. Hacer clic en "Rechazar"
+
+**Ejemplo de motivo:**
+"Problema resuelto con reinicio simple del sistema operativo. Equipo testado durante 15 minutos, funcionando normalmente. No requiere mantenimiento físico."
+
+**¿Qué sucede?**
+- La solicitud cambia al estado "Rechazado"
+- El equipo vuelve automáticamente al estado "Disponible"
+- El equipo puede ser asignado nuevamente
+
+---
+
+### 8.6 Preguntas Frecuentes
+
+**¿Qué hago si olvido mi contraseña?**
+Contactar al administrador del sistema para solicitar un restablecimiento de contraseña.
+
+**¿Puedo solicitar múltiples equipos a la vez?**
+Sí, pero cada equipo requiere una solicitud individual. El sistema limita la cantidad de equipos simultáneos según lo configurado por el administrador (por defecto, 5 equipos).
+
+**¿Qué pasa si no devuelvo un equipo en la fecha indicada?**
+El sistema mostrará alertas visuales. El administrador puede contactarlo o gestionar manualmente la devolución. Se recomienda comunicarse con el administrador antes del vencimiento si necesita una extensión.
+
+**¿Puedo cancelar una solicitud después de enviarla?**
+Sí, siempre que esté en estado "Pendiente". Una vez aprobada, debe contactar al administrador.
+
+**¿Qué hago si daño un equipo accidentalmente?**
+Reportar el problema inmediatamente usando la función "Reportar Problema" con una descripción honesta y detallada del incidente.
+
+**Como administrador, ¿puedo aprobar mi propia solicitud?**
+Técnicamente sí, pero no es una buena práctica. Se recomienda que otro administrador apruebe solicitudes.
+
+**¿Las auditorías registran todas las acciones?**
+Sí, el sistema registra automáticamente todas las operaciones significativas: creación/edición de equipos, aprobaciones, rechazos, asignaciones, reportes de problemas, mantenimientos completados, etc.
+
+---
+
+### 8.7 Glosario de Términos
+
+**Badge**: Indicador visual de color que identifica estados o roles.
+
+**Dashboard**: Pantalla principal que muestra resumen e información relevante al iniciar sesión.
+
+**Equipo**: Cualquier dispositivo tecnológico gestionado por el sistema (laptops, tablets, monitores, periféricos, etc.).
+
+**Estado**: Situación actual de un equipo (Disponible, Prestado, Mantenimiento, Baja).
+
+**Modal**: Ventana emergente sobre la pantalla principal que solicita información o confirmación.
+
+**Préstamo**: Asignación temporal de un equipo a un trabajador.
+
+**Solicitud**: Petición realizada por un trabajador para obtener un equipo en préstamo.
+
+**Widget**: Componente visual del dashboard que muestra información específica.
+
+---
+
+### 8.8 Guía de Capturas de Pantalla
+
+**Para ilustrar este manual con capturas reales del sistema, se requieren 30 capturas organizadas de la siguiente manera:**
+
+#### CAPTURAS GENERALES (1)
+- **Figura 1**: Pantalla de login completa
+
+#### CAPTURAS ADMINISTRADOR (18)
+- **Figura 2**: Dashboard completo con widgets y estadísticas
+- **Figura 3**: Listado de equipos con filtros y badges
+- **Figura 4**: Formulario crear equipo vacío
+- **Figura 5**: Formulario editar equipo con datos
+- **Figura 6**: Historial de préstamos de un equipo
+- **Figura 7**: Listado solicitudes con badge de pendientes
+- **Figura 8**: Modal aprobar solicitud
+- **Figura 9**: Solicitud aprobada (notificación + badge verde)
+- **Figura 10**: Modal rechazar solicitud
+- **Figura 11**: Vista detallada de una solicitud
+- **Figura 12**: Tabla de usuarios con badges de roles
+- **Figura 13**: Modal asignar equipo directamente
+- **Figura 14**: Formulario crear usuario
+- **Figura 15**: Usuario creado (notificación + tabla actualizada)
+- **Figura 16**: Formulario editar usuario
+- **Figura 17**: Solicitudes de mantenimiento vista admin
+- **Figura 18**: Tabla de parámetros configurables
+- **Figura 19**: Modal editar parámetro
+
+#### CAPTURAS TRABAJADOR (8)
+- **Figura 20**: Dashboard trabajador
+- **Figura 21**: Formulario solicitar préstamo
+- **Figura 22**: Solicitud creada (notificación)
+- **Figura 23**: Mis solicitudes (tabla)
+- **Figura 24**: Detalle solicitud rechazada con motivo
+- **Figura 25**: Mis equipos asignados
+- **Figura 26**: Modal reportar problema
+- **Figura 27**: Problema reportado (notificación)
+
+#### CAPTURAS MANTENIMIENTO (3)
+- **Figura 28**: Dashboard mantenimiento
+- **Figura 29**: Listado solicitudes de mantenimiento
+- **Figura 30**: Modal completar mantenimiento
+
+**Usuarios de prueba para capturar:**
+- Admin: admin@gestionoficina.com (password: password123)
+- Trabajador: carlos@gestionoficina.com (password: password123)
+- Mantenimiento: pedro@gestionoficina.com (password: password123)
 
 #### Para Administradores
 
