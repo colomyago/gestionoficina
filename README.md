@@ -1,6 +1,6 @@
 # Sistema de Gestión de Oficina
 
-Sistema web para gestionar equipos de oficina, préstamos y mantenimiento. Proyecto final para la materia Gestión de Desarrollo de Software.
+Sistema web para gestionar equipos de oficina, préstamos y mantenimiento. Trabajo Final Integrador de carrera.
 
 ## Qué hace
 
